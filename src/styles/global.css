@@ -1,0 +1,36 @@
+:root {
+  --primary-color: #4a90e2; /* Lighter blue for a classy look */
+  --secondary-color: #50c878; /* Vibrant green for hover effects */
+  --accent-color: #f7b731; /* Warm yellow for accents */
+  --background-color: #f8f9fa;
+  --text-color: #333;
+  --error-color: #dc3545;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+}
+
+footer {
+  margin-top: auto;
+}
