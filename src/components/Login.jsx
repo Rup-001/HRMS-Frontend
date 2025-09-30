@@ -1,27 +1,38 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { login } from '../api/auth';
+import { ArrowLeft, Lock, Mail } from 'lucide-react';
 import '../styles/Login.css';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login: setAuth } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login: authLogin } = useContext(AuthContext);
-  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      const data = await login(email, password);
+      const data = await login(formData.email, formData.password);
       if (data.success) {
-        authLogin(data.token);
-        navigate('/dashboard', { replace: true });
+        setAuth(data.token, {
+          id: data.id,
+          email: data.email,
+          role: data.role,
+          employeeId: data.employeeId,
+          companyId: data.companyId,
+        });
+        navigate('/dashboard');
+      } else {
+        setError(data.error || 'Login failed');
       }
     } catch (err) {
       setError(err.error || 'Something went wrong');
@@ -32,33 +43,60 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+      <div className="particle-background">
+        {[...Array(15)].map((_, i) => (
+          <div key={i} className={`particle particle-${i}`} />
+        ))}
+      </div>
+      <div className="login-card">
+        <div className="login-glow" />
+        <Link to="/" className="back-link">
+          <ArrowLeft className="back-icon" />
+          Back to Home
+        </Link>
+        <div className="logo-container">
+          <img src="/logo-al.svg" alt="Alawaf HRMS Logo" className="login-logo animate-float" />
         </div>
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
+        <h2 className="login-title">Login to Alawaf HRMS</h2>
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="input-group">
+            <Mail className="input-icon" />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              className="login-input"
+              required
+            />
+          </div>
+          <div className="input-group">
+            <Lock className="input-icon" />
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="login-input"
+              required
+            />
+          </div>
+          {error && <p className="error-message">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="login-button"
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        <p className="invitation-link">
+          New user?{' '}
+          <Link to="/accept-invitation">Accept Invitation</Link>
+        </p>
+      </div>
     </div>
   );
 };

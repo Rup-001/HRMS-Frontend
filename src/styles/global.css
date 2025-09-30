@@ -1,7 +1,7 @@
 :root {
-  --primary-color: #4a90e2; /* Lighter blue for a classy look */
-  --secondary-color: #50c878; /* Vibrant green for hover effects */
-  --accent-color: #f7b731; /* Warm yellow for accents */
+  --primary-color: #4a90e2;
+  --secondary-color: #50c878;
+  --accent-color: #f7b731;
   --background-color: #f8f9fa;
   --text-color: #333;
   --error-color: #dc3545;
@@ -28,7 +28,7 @@ body {
 
 main {
   flex: 1;
-  padding: 20px;
+  padding: 0;
 }
 
 footer {
