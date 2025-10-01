@@ -1,4 +1,4 @@
-.auth-container {
+/* .auth-container {
   max-width: 500px;
   margin: 50px auto;
   padding: 30px;
@@ -70,4 +70,68 @@ button:hover {
 button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
+} */
+
+
+.auth-container {
+  padding: 20px;
+  background: linear-gradient(135deg, #1e1e2f 0%, #2a1a3f 50%, #1e1e2f 100%);
+  color: #fff;
+  min-height: calc(100vh - 80px);
+}
+
+.auth-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(90deg, var(--primary-color), #e10624);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 20px;
+}
+
+.auth-form {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #e10624;
+}
+
+.auth-input::placeholder {
+  color: #aaa;
+}
+
+.auth-button {
+  padding: 10px 20px;
+  background: linear-gradient(90deg, var(--primary-color), #e10624);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-button:hover {
+  background: linear-gradient(90deg, #e10624, var(--secondary-color));
 }
