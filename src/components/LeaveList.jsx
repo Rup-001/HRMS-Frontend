@@ -145,7 +145,7 @@ const LeaveList = () => {
   return (
     <div className="leave-container">
       <h2 className="employee-title">Leave Requests</h2>
-      {user?.role === 'Employee' && (
+      {user?.role === 'Employee' || user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' && (
         <form onSubmit={handleSubmit} className="leave-form">
           <div className="form-grid">
             <div className="form-group">

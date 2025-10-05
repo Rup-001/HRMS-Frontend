@@ -441,7 +441,7 @@ const EmployeeList = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="employee-input employee-search"
           />
-          {(user?.role === 'Super Admin' || user?.role === 'HR Manager') && (
+          {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin') && (
             <Link to="/employees/create" className="employee-button">
               Add Employee
             </Link>
@@ -483,7 +483,7 @@ const EmployeeList = () => {
                     <td>{employee.gender || '-'}</td>
                     <td>{employee.dob ? new Date(employee.dob).toLocaleDateString() : '-'}</td>
                     <td>
-                      {(user?.role === 'Super Admin' || user?.role === 'HR Manager') && (
+                      {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin') && (
                         <Link to={`/employees/${employee._id}/edit`} className="employee-button">
                           Edit
                         </Link>

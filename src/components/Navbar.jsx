@@ -176,7 +176,7 @@ const Navbar = () => {
               Dashboard
             </Link>
           </li>
-          {(user?.role === 'Super Admin' || user?.role === 'HR Manager') && (
+          {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin') && (
             <li>
               <Link to="/employees" className="nav-link" onClick={toggleMenu}>
                 <Users className="nav-icon" />
