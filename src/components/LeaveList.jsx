@@ -145,7 +145,7 @@ const LeaveList = () => {
   return (
     <div className="leave-container">
       <h2 className="employee-title">Leave Requests</h2>
-      {user?.role === 'Employee' || user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' && (
+      {user?.role === 'Employee' && 'HR Manager' && (
         <form onSubmit={handleSubmit} className="leave-form">
           <div className="form-grid">
             <div className="form-group">
@@ -193,7 +193,7 @@ const LeaveList = () => {
                 <option value="remote">Remote</option>
               </select>
             </div>
-            <div className="form-group form-group-checkbox">
+            {/* <div className="form-group form-group-checkbox">
               <label htmlFor="isHalfDay">Half Day</label>
               <input
                 type="checkbox"
@@ -203,7 +203,8 @@ const LeaveList = () => {
                 onChange={handleChange}
                 className="employee-checkbox"
               />
-            </div>
+            </div> */}
+
           </div>
           {error && <p className="employee-message employee-error">{error}</p>}
           {success && <p className="employee-message employee-success">{success}</p>}
@@ -238,7 +239,7 @@ const LeaveList = () => {
                   <th>End Date</th>
                   <th>Type</th>
                   <th>Status</th>
-                  <th>Half Day</th>
+                  {/* <th>Half Day</th> */}
                   {allowedRoles.includes(user?.role) && <th>Actions</th>}
                 </tr>
               </thead>
@@ -251,7 +252,7 @@ const LeaveList = () => {
                     <td>{new Date(request.endDate).toLocaleDateString()}</td>
                     <td>{request.type.charAt(0).toUpperCase() + request.type.slice(1)}</td>
                     <td>{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</td>
-                    <td>{request.isHalfDay ? 'Yes' : 'No'}</td>
+                    {/* <td>{request.isHalfDay ? 'Yes' : 'No'}</td> */}
                     {allowedRoles.includes(user?.role) && (
                       <td>
                         {request.status === 'pending' && (

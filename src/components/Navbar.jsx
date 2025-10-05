@@ -176,14 +176,14 @@ const Navbar = () => {
               Dashboard
             </Link>
           </li>
-          {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin') && (
+          {(user?.role === 'Super Admin' || user?.role === 'HR Manager') && (
             <li>
               <Link to="/employees" className="nav-link" onClick={toggleMenu}>
                 <Users className="nav-icon" />
                 Employees
               </Link>
             </li>
-          )}
+          )} 
           <li>
             <Link to="/attendance" className="nav-link" onClick={toggleMenu}>
               <Calendar className="nav-icon" />

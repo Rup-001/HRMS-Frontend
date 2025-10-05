@@ -152,7 +152,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
             <EmployeeListPage />
-          </ProtectedRoute>
+           </ProtectedRoute>
         ),
       },
       {
