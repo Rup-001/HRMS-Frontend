@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createCompany } from '../api/company';
+import { createCompany, getCompanies } from '../api/company';
 import '../styles/CompanyCreate.css';
 
 const CompanyCreate = () => {
@@ -9,9 +9,44 @@ const CompanyCreate = () => {
     name: '',
     isActive: true,
   });
+  const [companies, setCompanies] = useState([]);
+  const [filteredCompanies, setFilteredCompanies] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const companiesPerPage = 10;
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  const fetchCompanies = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const data = await getCompanies(token);
+      if (data.success) {
+        setCompanies(data.data);
+        setFilteredCompanies(data.data);
+      } else {
+        setError(data.error || 'Failed to fetch companies');
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Something went wrong');
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
+  useEffect(() => {
+    const filtered = companies.filter(company =>
+      company.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCompanies(filtered);
+    setCurrentPage(1);
+  }, [searchQuery, companies]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -32,13 +67,30 @@ const CompanyCreate = () => {
       const data = await createCompany(formData, token);
       if (data.success) {
         setSuccess('Company created successfully!');
+        setFormData({ name: '', isActive: true });
+        await fetchCompanies();
         setTimeout(() => navigate('/dashboard'), 2000);
+      } else {
+        setError(data.error || 'Something went wrong');
       }
     } catch (err) {
-      setError(err.error || 'Something went wrong');
+      setError(err.response?.data?.error || err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
+  };
+
+  const indexOfLastCompany = currentPage * companiesPerPage;
+  const indexOfFirstCompany = indexOfLastCompany - companiesPerPage;
+  const currentCompanies = filteredCompanies.slice(indexOfFirstCompany, indexOfLastCompany);
+  const totalPages = Math.ceil(filteredCompanies.length / companiesPerPage);
+
+  const handlePrevious = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
   return (
@@ -74,6 +126,68 @@ const CompanyCreate = () => {
           {loading ? 'Creating...' : 'Create Company'}
         </button>
       </form>
+
+      <div className="company-header">
+        <h3 className="company-title">Company List</h3>
+        <div className="company-controls">
+          <input
+            type="text"
+            placeholder="Search by company name"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="company-input company-search"
+          />
+        </div>
+      </div>
+
+      {loadingCompanies ? (
+        <div className="company-message">Loading companies...</div>
+      ) : filteredCompanies.length === 0 ? (
+        <div className="company-message">No companies found.</div>
+      ) : (
+        <>
+          <div className="company-table-container">
+            <table className="company-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Active</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentCompanies.map((company) => (
+                  <tr key={company._id}>
+                    <td>{company.name || '-'}</td>
+                    <td>{company.isActive ? 'Yes' : 'No'}</td>
+                    <td>{new Date(company.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredCompanies.length > companiesPerPage && (
+            <div className="pagination-controls">
+              <button
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+                className="pagination-button"
+              >
+                Previous
+              </button>
+              <span className="pagination-info">Page {currentPage} of {totalPages}</span>
+              <button
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+                className="pagination-button"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

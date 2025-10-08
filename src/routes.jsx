@@ -102,6 +102,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/company',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager', 'C-Level Executive']}>
+            <CompanyCreatePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/change-password',
         element: (
           <ProtectedRoute>

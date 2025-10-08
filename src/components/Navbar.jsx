@@ -60,6 +60,15 @@ const Navbar = () => {
               Attendance
             </Link>
           </li>
+          
+          {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && (
+          <li>
+            <Link to="/company" className="nav-link" onClick={toggleMenu}>
+              <Calendar className="nav-icon" />
+              Company
+            </Link>
+          </li>
+          )}
           <li>
             <Link to="/leave" className="nav-link" onClick={toggleMenu}>
               <Briefcase className="nav-icon" />
