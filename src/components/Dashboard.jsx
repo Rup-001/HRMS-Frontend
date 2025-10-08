@@ -1,83 +1,3 @@
-// import { useContext } from 'react';
-// import { Navigate } from 'react-router-dom';
-// import { AuthContext } from '../context/AuthContext';
-// import '../styles/Dashboard.css';
-
-// const Dashboard = () => {
-//   const { user, loading } = useContext(AuthContext);
-
-//   // Enhanced demo data for different roles
-//   const mockData = {
-//     'Super Admin': {
-//       totalUsers: 1200,
-//       activeCompanies: 60,
-//       activeSessions: 250,
-//       totalLeaveRequests: 150,
-//       complianceRate: '98%',
-//     },
-//     'C-Level Executive': {
-//       annualRevenue: '$1.5M',
-//       activeProjects: 20,
-//       growthRate: '15%',
-//       employeeRetention: '90%',
-//       pendingApprovals: 5,
-//     },
-//     'Company Admin': {
-//       totalEmployees: 250,
-//       departments: 12,
-//       activeTasks: 60,
-//       pendingLeaveRequests: 10,
-//       attendanceRate: '94%',
-//     },
-//     'HR Manager': {
-//       newHiresThisMonth: 15,
-//       pendingPerformanceReviews: 10,
-//       attendanceRate: '95%',
-//       openPositions: 5,
-//       leaveApprovalsPending: 8,
-//     },
-//     'Manager': {
-//       teamMembers: 12,
-//       tasksCompleted: 40,
-//       pendingTasks: 7,
-//       teamAttendanceRate: '93%',
-//       pendingLeaveApprovals: 3,
-//     },
-//     'Employee': {
-//       tasksAssigned: 10,
-//       hoursWorkedThisWeek: 35,
-//       leaveBalanceDays: 12,
-//       pendingLeaveRequests: 2,
-//       lastCheckIn: '2025-10-01 09:00 AM',
-//     },
-//   };
-
-//   if (loading) return <div className="dashboard-message">Loading...</div>;
-//   if (!user) return <Navigate to="/login" />;
-
-//   const data = mockData[user.role] || {};
-
-//   return (
-//     <div className="dashboard-container">
-//       <h2 className="dashboard-title">Welcome, {user.fullName || 'User'}!</h2>
-//       <h3 className="dashboard-subtitle">{user.role} Dashboard</h3>
-//       <div className="dashboard-stats">
-//         {Object.entries(data).map(([key, value]) => (
-//           <div key={key} className="stat-card">
-//             <h4 className="card-title">{key.replace(/([A-Z])/g, ' $1').trim()}</h4>
-//             <p className="card-value">{value}</p>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
-
-
-
-
 import { useContext, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
@@ -133,7 +53,7 @@ const Dashboard = () => {
             <p>{stats.totalEmployees}</p>
           </div>
           <div className="stat-card">
-            <h4>Absent Today</h4>
+            <h4>Present Today</h4>
             <p>{stats.absentToday}</p>
           </div>
           <div className="stat-card">

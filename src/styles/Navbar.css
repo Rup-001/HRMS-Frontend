@@ -1,6 +1,7 @@
+
 .navbar {
   background: linear-gradient(135deg, #1e1e2f 0%, #2a1a3f 50%, #1e1e2f 100%);
-  padding: 15px 20px;
+  padding: 10px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   position: sticky;
   top: 0;
@@ -21,14 +22,14 @@
 }
 
 .nav-logo {
-    width: 200px;
+  width: 150px;
   height: auto;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -37,13 +38,13 @@
 .nav-link {
   color: #fff;
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
 }
 
 .nav-link:hover {
@@ -51,17 +52,13 @@
 }
 
 .nav-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   color: #fff;
 }
 
-.nav-button {
-  background: none;
-  border: none;
+.dropdown-toggle {
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
 }
 
 .hamburger-menu {
@@ -69,7 +66,11 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
+}
+
+.dropdown {
+  position: relative;
 }
 
 .user-dropdown {
@@ -79,10 +80,10 @@
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
 }
 
 .user-profile:hover {
@@ -90,8 +91,8 @@
 }
 
 .user-image {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #4a90e2;
@@ -99,7 +100,7 @@
 
 .user-name {
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
@@ -110,20 +111,20 @@
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 6px;
   list-style: none;
-  padding: 10px 0;
-  margin: 5px 0 0;
-  min-width: 150px;
+  padding: 8px 0;
+  margin: 4px 0 0;
+  min-width: 140px;
   z-index: 1000;
 }
 
 .dropdown-item {
   display: block;
-  padding: 10px 20px;
+  padding: 8px 16px;
   color: #fff;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   background: none;
   border: none;
   width: 100%;
@@ -143,14 +144,14 @@
   .nav-links {
     display: none;
     position: absolute;
-    top: 70px;
+    top: 60px;
     left: 0;
     right: 0;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     flex-direction: column;
     align-items: flex-start;
-    padding: 20px;
+    padding: 15px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
 
@@ -160,7 +161,14 @@
 
   .nav-link {
     width: 100%;
-    padding: 12px 20px;
+    padding: 10px 15px;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    margin: 8px 0 0;
+    background: rgba(255, 255, 255, 0.15);
   }
 
   .user-dropdown {
@@ -170,12 +178,5 @@
   .user-profile {
     width: 100%;
     justify-content: flex-start;
-  }
-
-  .dropdown-menu {
-    position: static;
-    width: 100%;
-    margin: 10px 0 0;
-    background: rgba(255, 255, 255, 0.15);
   }
 }

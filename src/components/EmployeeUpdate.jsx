@@ -53,6 +53,7 @@ const EmployeeUpdate = () => {
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
   const [hasUserAccount, setHasUserAccount] = useState(false);
+  const [createUserChanged, setCreateUserChanged] = useState(false);
   const defaultAvatar = '/default-avatar.png';
   const fileFields = ['passportSizePhoto', 'appointmentLetter', 'resume', 'nidCopy'];
 
@@ -104,6 +105,7 @@ const EmployeeUpdate = () => {
           });
           setPreviewImage(emp.passportSizePhoto ? `${import.meta.env.VITE_API_URL}${emp.passportSizePhoto}` : null);
           setHasUserAccount(emp.hasUserAccount || false);
+          console.log('Initial: hasUserAccount:', emp.hasUserAccount, 'formData.createUser:', false);
           setCompanies(companyData.data);
           setEmployeesList(empData.data);
         } else {
@@ -141,9 +143,13 @@ const EmployeeUpdate = () => {
       // Prevent change if not super admin
       return;
     } else {
-      setFormData({
-        ...formData,
-        [name]: type === 'checkbox' ? checked : value,
+      setFormData(prev => {
+        const newFormData = { ...prev, [name]: type === 'checkbox' ? checked : value };
+        if (name === 'createUser') {
+          setCreateUserChanged(true);
+          console.log('Updated formData.createUser:', newFormData.createUser, 'createUserChanged:', true);
+        }
+        return newFormData;
       });
     }
   };
@@ -160,12 +166,10 @@ const EmployeeUpdate = () => {
       Object.keys(formData).forEach((key) => {
         if (fileFields.includes(key) && formData[key]) {
           formDataToSend.append(key, formData[key]);
-        } else if (key === 'createUser') {
-          if (formData[key] && !hasUserAccount) {
-            formDataToSend.append(key, 'true');
-          }
-          // Do not append if false or if hasUserAccount
-        } else if (formData[key] !== undefined && formData[key] !== null && formData[key] !== '') {
+        } else if (key === 'createUser' && !hasUserAccount && createUserChanged && formData[key]) {
+          formDataToSend.append(key, 'true');
+          console.log('Appending createUser: true to FormData');
+        } else if (key !== 'createUser' && formData[key] !== undefined && formData[key] !== null && formData[key] !== '') {
           formDataToSend.append(key, formData[key].toString());
         }
       });
@@ -549,29 +553,25 @@ const EmployeeUpdate = () => {
               ))}
             </select>
           </div>
-          {hasUserAccount ? (
-            <div className="form-group">
-              <label>Has User Account</label>
-              <input
-                type="checkbox"
-                checked={true}
-                className="employee-checkbox"
-                disabled
-              />
-            </div>
-          ) : (
-            <div className="form-group">
-              <label htmlFor="createUser">Create User Account</label>
-              <input
-                type="checkbox"
-                id="createUser"
-                name="createUser"
-                checked={formData.createUser}
-                onChange={handleChange}
-                className="employee-checkbox"
-              />
-            </div>
-          )}
+          <div className="form-group">
+            <label htmlFor="createUser">
+              Create User Account
+              {hasUserAccount && (
+                <span className="tooltip-text" title="User account already exists and cannot be modified">
+                  (Account Exists)
+                </span>
+              )}
+            </label>
+            <input
+              type="checkbox"
+              id="createUser"
+              name="createUser"
+              checked={hasUserAccount || formData.createUser}
+              onChange={handleChange}
+              className="employee-checkbox"
+              disabled={hasUserAccount}
+            />
+          </div>
 
           {/* Uploads bottom */}
           <div className="form-group">

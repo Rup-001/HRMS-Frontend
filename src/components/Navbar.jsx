@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Home, Users, Calendar, Briefcase, Laptop, Lock, LogOut, Menu, X, FileText } from 'lucide-react';
+import { Users, Calendar, FileText, Lock, LogOut, Menu, X, Briefcase } from 'lucide-react';
 import '../styles/Navbar.css';
 
 // Use a local default avatar image (place this in your public folder or src/assets)
@@ -11,7 +11,8 @@ const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isRequestsDropdownOpen, setIsRequestsDropdownOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -20,11 +21,18 @@ const Navbar = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-    if (isDropdownOpen) setIsDropdownOpen(false);
+    if (isRequestsDropdownOpen) setIsRequestsDropdownOpen(false);
+    if (isUserDropdownOpen) setIsUserDropdownOpen(false);
   };
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
+  const toggleRequestsDropdown = () => {
+    setIsRequestsDropdownOpen(!isRequestsDropdownOpen);
+    if (isUserDropdownOpen) setIsUserDropdownOpen(false);
+  };
+
+  const toggleUserDropdown = () => {
+    setIsUserDropdownOpen(!isUserDropdownOpen);
+    if (isRequestsDropdownOpen) setIsRequestsDropdownOpen(false);
   };
 
   // Determine the profile image to use
@@ -34,18 +42,14 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-content">
         <div className="navbar-logo">
-          <img src="Kloud_Technologies_Logo.svg" alt="Alawaf HRMS Logo" className="nav-logo" />
+          <Link to="/dashboard">
+            <img src="Kloud_Technologies_Logo.svg" alt="Alawaf HRMS Logo" className="nav-logo" />
+          </Link>
         </div>
         <button className="hamburger-menu" onClick={toggleMenu}>
           {isMenuOpen ? <X className="nav-icon" /> : <Menu className="nav-icon" />}
         </button>
         <ul className={`nav-links ${isMenuOpen ? 'nav-links-open' : ''}`}>
-          <li>
-            <Link to="/dashboard" className="nav-link" onClick={toggleMenu}>
-              <Home className="nav-icon" />
-              Dashboard
-            </Link>
-          </li>
           {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && (
             <li>
               <Link to="/employees" className="nav-link" onClick={toggleMenu}>
@@ -60,26 +64,33 @@ const Navbar = () => {
               Attendance
             </Link>
           </li>
-          
           {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && (
-          <li>
-            <Link to="/company" className="nav-link" onClick={toggleMenu}>
-              <Calendar className="nav-icon" />
-              Company
-            </Link>
-          </li>
+            <li>
+              <Link to="/company" className="nav-link" onClick={toggleMenu}>
+                <Calendar className="nav-icon" />
+                Company
+              </Link>
+            </li>
           )}
-          <li>
-            <Link to="/leave" className="nav-link" onClick={toggleMenu}>
+          <li className="dropdown">
+            <div className="nav-link dropdown-toggle" onClick={toggleRequestsDropdown}>
               <Briefcase className="nav-icon" />
-              Leave
-            </Link>
-          </li>
-          <li>
-            <Link to="/remote" className="nav-link" onClick={toggleMenu}>
-              <Laptop className="nav-icon" />
-              Remote
-            </Link>
+              Requests
+            </div>
+            {isRequestsDropdownOpen && (
+              <ul className="dropdown-menu">
+                <li>
+                  <Link to="/leave" className="dropdown-item" onClick={toggleMenu}>
+                    Leave
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/remote" className="dropdown-item" onClick={toggleMenu}>
+                    Remote
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && (
             <li>
@@ -90,7 +101,7 @@ const Navbar = () => {
             </li>
           )}
           <li className="user-dropdown">
-            <div className="user-profile" onClick={toggleDropdown}>
+            <div className="user-profile" onClick={toggleUserDropdown}>
               <img
                 src={profileImage}
                 alt="User Profile"
@@ -103,7 +114,7 @@ const Navbar = () => {
               />
               <span className="user-name">{user?.fullName || 'User'}</span>
             </div>
-            {isDropdownOpen && (
+            {isUserDropdownOpen && (
               <ul className="dropdown-menu">
                 <li>
                   <Link to="/profile" className="dropdown-item" onClick={toggleMenu}>
