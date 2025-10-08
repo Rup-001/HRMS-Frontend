@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { login } from '../api/auth';
+import { login as loginAPI } from '../api/auth';
 import { ArrowLeft, Lock, Mail } from 'lucide-react';
 import '../styles/Login.css';
 
@@ -21,20 +21,22 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const data = await login(formData.email, formData.password);
+      const data = await loginAPI(formData.email, formData.password);
+      console.log('Login API response:', data); // Debug API response
       if (data.success) {
-        setAuth(data.token, {
-          id: data.id,
-          email: data.email,
-          role: data.role,
-          employeeId: data.employeeId,
-          companyId: data.companyId,
-        });
-        navigate('/dashboard');
+        const result = await setAuth(data.token);
+        console.log('setAuth result:', result); // Debug setAuth result
+        if (result.success) {
+          navigate('/dashboard', { replace: true });
+        } else {
+          setError(result.error || 'Failed to authenticate user');
+        }
       } else {
-        setError(data.error || 'Login failed');
+        setError(data.error || 'Invalid email or password');
       }
     } catch (err) {
+      console.error('Login error:', err); // Debug full error
+      console.error('Login error21:', err.error); // Debug full error
       setError(err.error || 'Something went wrong');
     } finally {
       setLoading(false);
@@ -49,15 +51,15 @@ const Login = () => {
         ))}
       </div>
       <div className="login-card">
-        <div className="login-glow" />
+        <div className="" />
         <Link to="/" className="back-link">
           <ArrowLeft className="back-icon" />
           Back to Home
         </Link>
         <div className="logo-container">
-          <img src="/logo-al.svg" alt="Alawaf HRMS Logo" className="login-logo animate-float" />
+          <img src="/Kloud Technologies Logo.png" alt="Alawaf HRMS Logo" className="login-logo" />
         </div>
-        <h2 className="login-title">Login to Alawaf HRMS</h2>
+        <h2 className="login-title">Login to HRMS</h2>
         <form onSubmit={handleSubmit} className="login-form">
           <div className="input-group">
             <Mail className="input-icon" />
@@ -69,6 +71,7 @@ const Login = () => {
               placeholder="Email"
               className="login-input"
               required
+              disabled={loading}
             />
           </div>
           <div className="input-group">
@@ -81,6 +84,7 @@ const Login = () => {
               placeholder="Password"
               className="login-input"
               required
+              disabled={loading}
             />
           </div>
           {error && <p className="error-message">{error}</p>}
@@ -96,6 +100,7 @@ const Login = () => {
           New user?{' '}
           <Link to="/accept-invitation">Accept Invitation</Link>
         </p>
+        <p className="powered-by">Powered by Alawaf</p>
       </div>
     </div>
   );

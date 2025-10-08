@@ -2,46 +2,36 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const createEmployee = async (employeeData, token) => {
-  try {
-    const response = await axios.post(`${API_URL}/api/employees`, employeeData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { success: false, error: 'Network error' };
-  }
-};
-
-export const updateEmployee = async (id, employeeData, token) => {
-  try {
-    const response = await axios.patch(`${API_URL}/api/employees/${id}`, employeeData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { success: false, error: 'Network error' };
-  }
+export const getEmployeeProfile = async (employeeId, token) => {
+  const response = await axios.get(`${API_URL}/api/employees/${employeeId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
 };
 
 export const getEmployees = async (token) => {
-  try {
-    const response = await axios.get(`${API_URL}/api/employees`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { success: false, error: 'Network error' };
-  }
+  const response = await axios.get(`${API_URL}/api/employees`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
 };
 
-export const getEmployeeById = async (id, token) => {
-  try {
-    const response = await axios.get(`${API_URL}/api/employees/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { success: false, error: 'Network error' };
-  }
+export const createEmployee = async (formData, token) => {
+  const response = await axios.post(`${API_URL}/api/employees`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const updateEmployee = async (employeeId, formData, token) => {
+  const response = await axios.patch(`${API_URL}/api/employees/${employeeId}`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
 };

@@ -77,14 +77,10 @@
   justify-content: center;
   align-items: center;
   display: flex;
-  /* display: flex;
-  justify-content: center; /* centers horizontally */
-  /* align-items: center;     /* centers vertically */
-
 }
 
 .login-logo {
-  width: 80px;
+  width: 250px;
   height: auto;
 }
 
@@ -162,6 +158,11 @@
   color: #aaa;
 }
 
+.login-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .error-message {
   color: var(--error-color);
   text-align: center;
@@ -221,6 +222,14 @@
 
 .invitation-link a:hover {
   color: var(--secondary-color);
+}
+
+.powered-by {
+  text-align: center;
+  margin-top: 15px;
+  color: #aaa;
+  font-size: 0.75rem;
+  opacity: 0.7;
 }
 
 @keyframes pulse {
