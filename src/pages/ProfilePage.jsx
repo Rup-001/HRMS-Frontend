@@ -82,11 +82,11 @@ const ProfilePage = () => {
           </div>
           <div className="profile-field">
             <span className="profile-label">Department:</span>
-            <span className="profile-value">{profile.assignedDepartment || '-'}</span>
+            <span className="profile-value">{profile.department?.name || '-'}</span>
           </div>
           <div className="profile-field">
             <span className="profile-label">Designation:</span>
-            <span className="profile-value">{profile.designation || '-'}</span>
+            <span className="profile-value">{profile.designation?.name || '-'}</span>
           </div>
           <div className="profile-field">
             <span className="profile-label">Joining Date:</span>

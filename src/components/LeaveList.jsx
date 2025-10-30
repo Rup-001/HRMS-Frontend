@@ -12,6 +12,7 @@ const LeaveList = () => {
     startDate: '',
     endDate: '',
     type: 'sick',
+    isHalfDay: false,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -28,9 +29,8 @@ const LeaveList = () => {
       const token = localStorage.getItem('token');
       const data = await getLeaveRequests(token);
       if (data.success) {
-        const leaveOnly = data.data.filter(request => request.type !== 'remote');
-        setLeaveRequests(leaveOnly);
-        setFilteredRequests(leaveOnly);
+        setLeaveRequests(data.data);
+        setFilteredRequests(data.data);
       } else {
         setError(data.error || 'Failed to fetch leave requests');
       }
@@ -42,13 +42,28 @@ const LeaveList = () => {
   };
 
   useEffect(() => {
-    const filtered = leaveRequests.filter(request =>
-      (request.employeeId?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       request.employeeId?.newEmployeeCode?.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    let filtered = leaveRequests;
+
+    if (user?.role === 'Manager') {
+      filtered = leaveRequests.filter(request =>
+        request.employeeId?._id === user.employeeId || request.approverId === user.employeeId
+      );
+    } else if (user?.role !== 'HR Manager') {
+      filtered = leaveRequests.filter(request =>
+        request.employeeId?._id === user.employeeId
+      );
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(request =>
+        (request.employeeId?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         request.employeeId?.newEmployeeCode?.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
     setFilteredRequests(filtered);
     setCurrentPage(1);
-  }, [searchQuery, leaveRequests]);
+  }, [searchQuery, leaveRequests, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -177,7 +192,19 @@ const LeaveList = () => {
               <option value="maternity">Maternity</option>
               <option value="paternity">Paternity</option>
               <option value="bereavement">Bereavement</option>
+              <option value="remote">Remote</option>
             </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="isHalfDay">Half Day Leave</label>
+            <input
+              type="checkbox"
+              id="isHalfDay"
+              name="isHalfDay"
+              checked={formData.isHalfDay}
+              onChange={handleChange}
+              className="employee-checkbox"
+            />
           </div>
         </div>
         {error && <p className="employee-message employee-error">{error}</p>}
@@ -190,13 +217,15 @@ const LeaveList = () => {
       <div className="leave-header">
         <h3 className="employee-title">Leave History</h3>
         <div className="leave-controls">
-          <input
-            type="text"
-            placeholder="Search by employee name or code"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="employee-input employee-search"
-          />
+          {(user?.role === 'HR Manager' || user?.role === 'Manager') && (
+            <input
+              type="text"
+              placeholder="Search by employee name or code"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="employee-input employee-search"
+            />
+          )}
         </div>
       </div>
 
@@ -214,30 +243,36 @@ const LeaveList = () => {
                   <th>End Date</th>
                   <th>Type</th>
                   <th>Status</th>
-                  {user?.role?.includes('C-Level Executive' || 'Super Admin') && <th>Actions</th>}
+                  {(user?.role === 'Super Admin' || user?.role === 'C-Level Executive' || user?.role === 'Company Admin' || user?.role === 'HR Manager' || user?.role === 'Manager') && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
-                {currentRequests.map((request) => (
-                  <tr key={request._id}>
-                    <td>{request.employeeId?.fullName || '-'}</td>
-                    <td>{request.employeeId?.newEmployeeCode || '-'}</td>
-                    <td>{new Date(request.startDate).toLocaleDateString()}</td>
-                    <td>{new Date(request.endDate).toLocaleDateString()}</td>
-                    <td>{request.type.charAt(0).toUpperCase() + request.type.slice(1)}</td>
-                    <td>{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</td>
-                    {user?.role?.includes('C-Level Executive' || 'Super Admin') && (
-                      <td>
-                        {request.status === 'pending' && (
-                          <>
-                            <button onClick={() => handleApprove(request._id)} className="employee-button approve-button">Approve</button>
-                            <button onClick={() => handleDeny(request._id)} className="employee-button deny-button">Deny</button>
-                          </>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))}
+                {currentRequests.map((request) => {
+                  const canApproveDeny = (
+                    (user?.role === 'Manager' && request.status === 'pending' && request.approverId === user.employeeId) ||
+                    ((user?.role === 'HR Manager' || user?.role === 'Super Admin' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && request.status === 'pending')
+                  );
+                  return (
+                    <tr key={request._id}>
+                      <td>{request.employeeId?.fullName || '-'}</td>
+                      <td>{request.employeeId?.newEmployeeCode || '-'}</td>
+                      <td>{new Date(request.startDate).toLocaleDateString()}</td>
+                      <td>{new Date(request.endDate).toLocaleDateString()}</td>
+                      <td>{request.type.charAt(0).toUpperCase() + request.type.slice(1)} {request.isHalfDay ? '(Half Day)' : ''}</td>
+                      <td>{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</td>
+                      {(user?.role === 'Super Admin' || user?.role === 'C-Level Executive' || user?.role === 'Company Admin' || user?.role === 'HR Manager' || user?.role === 'Manager') && (
+                        <td>
+                          {canApproveDeny && (
+                            <>
+                              <button onClick={() => handleApprove(request._id)} className="employee-button approve-button">Approve</button>
+                              <button onClick={() => handleDeny(request._id)} className="employee-button deny-button">Deny</button>
+                            </>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -4,6 +4,8 @@ import { AuthContext } from '../context/AuthContext';
 import { createEmployee } from '../api/employee';
 import { getCompanies } from '../api/company';
 import { getEmployees as getAllEmployees } from '../api/employee';
+import { getDepartmentsByCompany } from '../api/department';
+import { getDesignationsByDepartment } from '../api/designation';
 import '../styles/Employee.css';
 
 const EmployeeCreate = () => {
@@ -13,13 +15,13 @@ const EmployeeCreate = () => {
   const [formData, setFormData] = useState({
     companyId: '',
     fullName: '',
-    newEmployeeCode: '',
     role: isSuperAdmin ? '' : 'Employee',
     joiningDate: '',
-    assignedDepartment: '',
+    department: '',
     designation: '',
     email: '',
     createUser: false,
+    createDeviceUser: false,
     oldEmployeeCode: '',
     deviceUserId: '',
     currentDesignation: '',
@@ -46,6 +48,8 @@ const EmployeeCreate = () => {
     nidCopy: null,
   });
   const [companies, setCompanies] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
   const [employeesList, setEmployeesList] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -65,6 +69,10 @@ const EmployeeCreate = () => {
         if (companyData.success && empData.success) {
           setCompanies(companyData.data);
           setEmployeesList(empData.data);
+          // Automatically select the first company if available
+          if (companyData.data.length > 0) {
+            setFormData(prev => ({ ...prev, companyId: companyData.data[0]._id }));
+          }
         } else {
           setError(companyData.error || empData.error || 'Failed to fetch data');
         }
@@ -74,6 +82,58 @@ const EmployeeCreate = () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      if (formData.companyId) {
+        try {
+          const token = localStorage.getItem('token');
+          console.log('Fetching departments for companyId:', formData.companyId);
+          const data = await getDepartmentsByCompany(formData.companyId, token);
+          if (data.success) {
+            console.log('Fetched departments:', data.data);
+            setDepartments(data.data);
+          } else {
+            setError(data.error || 'Failed to fetch departments');
+            console.error('Error fetching departments:', data.error);
+          }
+        } catch (err) {
+          setError(err.error || 'Something went wrong');
+          console.error('Exception fetching departments:', err);
+        }
+      } else {
+        setDepartments([]);
+        console.log('companyId is empty, resetting departments.');
+      }
+    };
+    fetchDepartments();
+  }, [formData.companyId]);
+
+  useEffect(() => {
+    const fetchDesignations = async () => {
+      if (formData.department) {
+        try {
+          const token = localStorage.getItem('token');
+          console.log('Fetching designations for departmentId:', formData.department);
+          const data = await getDesignationsByDepartment(formData.department, token);
+          if (data.success) {
+            console.log('Fetched designations:', data.data);
+            setDesignations(data.data);
+          } else {
+            setError(data.error || 'Failed to fetch designations');
+            console.error('Error fetching designations:', data.error);
+          }
+        } catch (err) {
+          setError(err.error || 'Something went wrong');
+          console.error('Exception fetching designations:', err);
+        }
+      } else {
+        setDesignations([]);
+        console.log('departmentId is empty, resetting designations.');
+      }
+    };
+    fetchDesignations();
+  }, [formData.department]);
 
   useEffect(() => {
     if (formData.joiningDate) {
@@ -98,9 +158,16 @@ const EmployeeCreate = () => {
       // Prevent change if not super admin
       return;
     } else {
-      setFormData({
-        ...formData,
-        [name]: type === 'checkbox' ? checked : value,
+      setFormData(prevFormData => {
+        const newFormData = { ...prevFormData, [name]: type === 'checkbox' ? checked : value };
+        if (name === 'companyId') {
+          newFormData.department = '';
+          newFormData.designation = '';
+        }
+        if (name === 'department') {
+          newFormData.designation = '';
+        }
+        return newFormData;
       });
     }
   };
@@ -117,7 +184,7 @@ const EmployeeCreate = () => {
       Object.keys(formData).forEach((key) => {
         if (fileFields.includes(key) && formData[key]) {
           formDataToSend.append(key, formData[key]);
-        } else if (key === 'createUser') {
+        } else if (key === 'createUser' || key === 'createDeviceUser') {
           if (formData[key]) {
             formDataToSend.append(key, 'true');
           }
@@ -158,15 +225,14 @@ const EmployeeCreate = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="newEmployeeCode">New Employee Code *</label>
+            <label htmlFor="createDeviceUser">Create Device User</label>
             <input
-              type="text"
-              id="newEmployeeCode"
-              name="newEmployeeCode"
-              value={formData.newEmployeeCode}
+              type="checkbox"
+              id="createDeviceUser"
+              name="createDeviceUser"
+              checked={formData.createDeviceUser}
               onChange={handleChange}
-              className="employee-input"
-              required
+              className="employee-checkbox"
             />
           </div>
           <div className="form-group">
@@ -223,28 +289,40 @@ const EmployeeCreate = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="assignedDepartment">Assigned Department *</label>
-            <input
-              type="text"
-              id="assignedDepartment"
-              name="assignedDepartment"
-              value={formData.assignedDepartment}
+            <label htmlFor="department">Department *</label>
+            <select
+              id="department"
+              name="department"
+              value={formData.department}
               onChange={handleChange}
               className="employee-input"
               required
-            />
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label htmlFor="designation">Designation *</label>
-            <input
-              type="text"
+            <select
               id="designation"
               name="designation"
               value={formData.designation}
               onChange={handleChange}
               className="employee-input"
               required
-            />
+            >
+              <option value="">Select Designation</option>
+              {designations.map((desig) => (
+                <option key={desig._id} value={desig._id}>
+                  {desig.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label htmlFor="email">Email {formData.createUser ? '*' : ''}</label>

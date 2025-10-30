@@ -1,3 +1,4 @@
+import InitialSetupPage from './pages/InitialSetupPage';
 import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import HomePage from './pages/HomePage';
@@ -10,7 +11,13 @@ import CompanyCreatePage from './pages/CompanyCreatePage';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import AttendanceListPage from './pages/AttendanceListPage';
+import AttendanceAdjustmentRequestPage from './pages/AttendanceAdjustmentRequestPage';
+import LeavePolicyPage from './pages/LeavePolicyPage';
+import LeaveEntitlementPage from './pages/LeaveEntitlementPage';
+import CreateDepartmentPage from './pages/CreateDepartmentPage';
+import CreateDesignationPage from './pages/CreateDesignationPage';
 import LeaveList from './components/LeaveList';
+import LeaveSummaryPage from './pages/LeaveSummaryPage';
 import RemoteList from './components/RemoteList';
 import ProfilePage from './pages/ProfilePage';
 import DocumentListPage from './pages/DocumentListPage';
@@ -48,6 +55,10 @@ const router = createBrowserRouter([
       {
         path: '/login',
         element: <PublicRoute><LoginPage /></PublicRoute>,
+      },
+      {
+        path: '/initial-setup',
+        element: <PublicRoute><InitialSetupPage /></PublicRoute>,
       },
       {
         path: '/accept-invitation',
@@ -102,6 +113,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/attendance/adjustments',
+        element: (
+          <ProtectedRoute allowedRoles={['Employee', 'Manager', 'HR Manager', 'Super Admin', 'Company Admin', 'C-Level Executive']}>
+            <AttendanceAdjustmentRequestPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/company',
         element: (
           <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager', 'C-Level Executive']}>
@@ -122,6 +141,46 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <LeaveList />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/leave/policy',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager', 'C-Level Executive']}>
+            <LeavePolicyPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/leave/entitlements',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager', 'C-Level Executive']}>
+            <LeaveEntitlementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/leave/summary',
+        element: (
+          <ProtectedRoute>
+            <LeaveSummaryPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/departments/create',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <CreateDepartmentPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/designations/create',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <CreateDesignationPage />
           </ProtectedRoute>
         ),
       },

@@ -184,6 +184,7 @@ const AttendanceList = () => {
                   <th>Check Out</th>
                   <th>Work Hours</th>
                   <th>Status</th>
+                  <th>Leave Type</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,6 +197,7 @@ const AttendanceList = () => {
                     <td>{record.check_out || '-'}</td>
                     <td>{record.work_hours.toFixed(2)}</td>
                     <td>{record.status}</td>
+                    <td>{record.leave_type || '-'}</td>
                   </tr>
                 ))}
               </tbody>

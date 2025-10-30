@@ -286,6 +286,7 @@ const RemoteList = () => {
     startDate: '',
     endDate: '',
     type: 'remote',
+    isHalfDay: false,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -421,17 +422,15 @@ const RemoteList = () => {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="endDate">End Date</label>
+          <div className="form-group form-group-checkbox">
+            <label htmlFor="isHalfDay">Half Day</label>
             <input
-              type="date"
-              id="endDate"
-              name="endDate"
-              value={formData.endDate}
+              type="checkbox"
+              id="isHalfDay"
+              name="isHalfDay"
+              checked={formData.isHalfDay}
               onChange={handleChange}
-              className="employee-input"
-              placeholder="Select end date"
-              required
+              className="employee-checkbox"
             />
           </div>
         </div>
@@ -466,39 +465,47 @@ const RemoteList = () => {
                   <th>Start Date</th>
                   <th>End Date</th>
                   <th>Status</th>
-                  {user?.role === 'C-Level Executive' && <th>Actions</th>}
+                  <th>Half Day</th>
+                  {(user?.role === 'Super Admin' || user?.role === 'C-Level Executive' || user?.role === 'Company Admin' || user?.role === 'HR Manager' || user?.role === 'Manager') && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
-                {currentRequests.map((request) => (
-                  <tr key={request._id}>
-                    <td>{request.employeeId?.fullName || '-'}</td>
-                    <td>{request.employeeId?.newEmployeeCode || '-'}</td>
-                    <td>{new Date(request.startDate).toLocaleDateString()}</td>
-                    <td>{new Date(request.endDate).toLocaleDateString()}</td>
-                    <td>{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</td>
-                    {user?.role === 'C-Level Executive' && (
-                      <td>
-                        {request.status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleApprove(request._id)}
-                              className="employee-button approve-button"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleDeny(request._id)}
-                              className="employee-button deny-button"
-                            >
-                              Deny
-                            </button>
-                          </>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))}
+                {currentRequests.map((request) => {
+                  const canApproveDeny = (
+                    (user?.role === 'Manager' && request.status === 'pending' && request.approverId === user.employeeId) ||
+                    ((user?.role === 'HR Manager' || user?.role === 'Super Admin' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && request.status === 'pending')
+                  );
+                  return (
+                    <tr key={request._id}>
+                      <td>{request.employeeId?.fullName || '-'}</td>
+                      <td>{request.employeeId?.newEmployeeCode || '-'}</td>
+                      <td>{new Date(request.startDate).toLocaleDateString()}</td>
+                      <td>{new Date(request.endDate).toLocaleDateString()}</td>
+                      <td>{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</td>
+                      <td>{request.isHalfDay ? 'Yes' : 'No'}</td>
+                      {(user?.role === 'Super Admin' || user?.role === 'C-Level Executive' || user?.role === 'Company Admin' || user?.role === 'HR Manager' || user?.role === 'Manager') && (
+                        <td>
+                          {canApproveDeny && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(request._id)}
+                                className="employee-button approve-button"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleDeny(request._id)}
+                                className="employee-button deny-button"
+                              >
+                                Deny
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

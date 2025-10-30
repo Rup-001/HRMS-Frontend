@@ -4,6 +4,8 @@ import { AuthContext } from '../context/AuthContext';
 import { getEmployeeProfile, updateEmployee } from '../api/employee';
 import { getCompanies } from '../api/company';
 import { getEmployees as getAllEmployees } from '../api/employee';
+import { getDepartmentsByCompany } from '../api/department';
+import { getDesignationsByDepartment } from '../api/designation';
 import '../styles/Employee.css';
 
 const EmployeeUpdate = () => {
@@ -17,10 +19,11 @@ const EmployeeUpdate = () => {
     newEmployeeCode: '',
     role: '',
     joiningDate: '',
-    assignedDepartment: '',
+    department: '',
     designation: '',
     email: '',
     createUser: false,
+    createDeviceUser: false,
     oldEmployeeCode: '',
     deviceUserId: '',
     currentDesignation: '',
@@ -47,6 +50,8 @@ const EmployeeUpdate = () => {
     nidCopy: null,
   });
   const [companies, setCompanies] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
   const [employeesList, setEmployeesList] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -69,15 +74,16 @@ const EmployeeUpdate = () => {
         if (employeeData.success && companyData.success && empData.success) {
           const emp = employeeData.data;
           setFormData({
-            companyId: emp.companyId || '',
+            companyId: emp.companyId?._id || emp.companyId || '',
             fullName: emp.fullName || '',
             newEmployeeCode: emp.newEmployeeCode || '',
             role: emp.role || '',
             joiningDate: emp.joiningDate ? new Date(emp.joiningDate).toISOString().split('T')[0] : '',
-            assignedDepartment: emp.assignedDepartment || '',
-            designation: emp.designation || '',
+            department: emp.department?._id || emp.department || '',
+            designation: emp.designation?._id || emp.designation || '',
             email: emp.email || '',
             createUser: false,
+            createDeviceUser: false,
             oldEmployeeCode: emp.oldEmployeeCode || '',
             deviceUserId: emp.deviceUserId || '',
             currentDesignation: emp.currentDesignation || '',
@@ -108,6 +114,10 @@ const EmployeeUpdate = () => {
           console.log('Initial: hasUserAccount:', emp.hasUserAccount, 'formData.createUser:', false);
           setCompanies(companyData.data);
           setEmployeesList(empData.data);
+          // Automatically select the first company if available and no companyId is set
+          if (!emp.companyId && companyData.data.length > 0) {
+            setFormData(prev => ({ ...prev, companyId: companyData.data[0]._id }));
+          }
         } else {
           setError('Failed to fetch data');
         }
@@ -119,6 +129,58 @@ const EmployeeUpdate = () => {
     };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      if (formData.companyId) {
+        try {
+          const token = localStorage.getItem('token');
+          console.log('Fetching departments for companyId:', formData.companyId);
+          const data = await getDepartmentsByCompany(formData.companyId, token);
+          if (data.success) {
+            console.log('Fetched departments:', data.data);
+            setDepartments(data.data);
+          } else {
+            setError(data.error || 'Failed to fetch departments');
+            console.error('Error fetching departments:', data.error);
+          }
+        } catch (err) {
+          setError(err.error || 'Something went wrong');
+          console.error('Exception fetching departments:', err);
+        }
+      } else {
+        setDepartments([]);
+        console.log('companyId is empty, resetting departments.');
+      }
+    };
+    fetchDepartments();
+  }, [formData.companyId]);
+
+  useEffect(() => {
+    const fetchDesignations = async () => {
+      if (formData.department) {
+        try {
+          const token = localStorage.getItem('token');
+          console.log('Fetching designations for departmentId:', formData.department);
+          const data = await getDesignationsByDepartment(formData.department, token);
+          if (data.success) {
+            console.log('Fetched designations:', data.data);
+            setDesignations(data.data);
+          } else {
+            setError(data.error || 'Failed to fetch designations');
+            console.error('Error fetching designations:', data.error);
+          }
+        } catch (err) {
+          setError(err.error || 'Something went wrong');
+          console.error('Exception fetching designations:', err);
+        }
+      } else {
+        setDesignations([]);
+        console.log('departmentId is empty, resetting designations.');
+      }
+    };
+    fetchDesignations();
+  }, [formData.department]);
 
   useEffect(() => {
     if (formData.joiningDate) {
@@ -143,11 +205,18 @@ const EmployeeUpdate = () => {
       // Prevent change if not super admin
       return;
     } else {
-      setFormData(prev => {
-        const newFormData = { ...prev, [name]: type === 'checkbox' ? checked : value };
+      setFormData(prevFormData => {
+        const newFormData = { ...prevFormData, [name]: type === 'checkbox' ? checked : value };
         if (name === 'createUser') {
           setCreateUserChanged(true);
           console.log('Updated formData.createUser:', newFormData.createUser, 'createUserChanged:', true);
+        }
+        if (name === 'companyId') {
+          newFormData.department = '';
+          newFormData.designation = '';
+        }
+        if (name === 'department') {
+          newFormData.designation = '';
         }
         return newFormData;
       });
@@ -166,9 +235,9 @@ const EmployeeUpdate = () => {
       Object.keys(formData).forEach((key) => {
         if (fileFields.includes(key) && formData[key]) {
           formDataToSend.append(key, formData[key]);
-        } else if (key === 'createUser' && !hasUserAccount && createUserChanged && formData[key]) {
+        } else if ((key === 'createUser' || key === 'createDeviceUser') && !hasUserAccount && formData[key]) {
           formDataToSend.append(key, 'true');
-          console.log('Appending createUser: true to FormData');
+          console.log(`Appending ${key}: true to FormData`);
         } else if (key !== 'createUser' && formData[key] !== undefined && formData[key] !== null && formData[key] !== '') {
           formDataToSend.append(key, formData[key].toString());
         }
@@ -216,6 +285,18 @@ const EmployeeUpdate = () => {
               onChange={handleChange}
               className="employee-input"
               required
+              readOnly
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="createDeviceUser">Create Device User</label>
+            <input
+              type="checkbox"
+              id="createDeviceUser"
+              name="createDeviceUser"
+              checked={formData.createDeviceUser}
+              onChange={handleChange}
+              className="employee-checkbox"
             />
           </div>
           <div className="form-group">
@@ -237,63 +318,40 @@ const EmployeeUpdate = () => {
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="role">Role *</label>
+            <label htmlFor="department">Department *</label>
             <select
-              id="role"
-              name="role"
-              value={formData.role}
+              id="department"
+              name="department"
+              value={formData.department}
               onChange={handleChange}
               className="employee-input"
               required
-              disabled={!isSuperAdmin}
             >
-              <option value="Employee">Employee</option>
-              {isSuperAdmin && (
-                <>
-                  <option value="Manager">Manager</option>
-                  <option value="HR Manager">HR Manager</option>
-                  <option value="Company Admin">Company Admin</option>
-                  <option value="Super Admin">Super Admin</option>
-                  <option value="C-Level Executive">C-Level Executive</option>
-                </>
-              )}
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="joiningDate">Joining Date *</label>
-            <input
-              type="date"
-              id="joiningDate"
-              name="joiningDate"
-              value={formData.joiningDate}
-              onChange={handleChange}
-              className="employee-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="assignedDepartment">Assigned Department *</label>
-            <input
-              type="text"
-              id="assignedDepartment"
-              name="assignedDepartment"
-              value={formData.assignedDepartment}
-              onChange={handleChange}
-              className="employee-input"
-              required
-            />
-          </div>
-          <div className="form-group">
             <label htmlFor="designation">Designation *</label>
-            <input
-              type="text"
+            <select
               id="designation"
               name="designation"
               value={formData.designation}
               onChange={handleChange}
               className="employee-input"
               required
-            />
+            >
+              <option value="">Select Designation</option>
+              {designations.map((desig) => (
+                <option key={desig._id} value={desig._id}>
+                  {desig.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label htmlFor="email">Email {(hasUserAccount || formData.createUser) ? '*' : ''}</label>

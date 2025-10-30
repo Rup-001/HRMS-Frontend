@@ -51,7 +51,7 @@ const EmployeeList = () => {
 
   useEffect(() => {
     const filtered = employees.filter(employee =>
-      employee.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (employee.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (employee.newEmployeeCode || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (employee.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     );

@@ -7,6 +7,8 @@ const CompanyCreate = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
+    abbreviation: '',
+    employeeIdBase: '',
     isActive: true,
   });
   const [companies, setCompanies] = useState([]);
@@ -52,7 +54,7 @@ const CompanyCreate = () => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : (name === 'employeeIdBase' ? parseInt(value, 10) : value),
     });
   };
 
@@ -104,6 +106,30 @@ const CompanyCreate = () => {
             id="name"
             name="name"
             value={formData.name}
+            onChange={handleChange}
+            className="company-input"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="abbreviation">Abbreviation</label>
+          <input
+            type="text"
+            id="abbreviation"
+            name="abbreviation"
+            value={formData.abbreviation}
+            onChange={handleChange}
+            className="company-input"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="employeeIdBase">Employee ID Base</label>
+          <input
+            type="number"
+            id="employeeIdBase"
+            name="employeeIdBase"
+            value={formData.employeeIdBase}
             onChange={handleChange}
             className="company-input"
             required
