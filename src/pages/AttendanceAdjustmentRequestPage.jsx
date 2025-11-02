@@ -14,7 +14,7 @@ const AttendanceAdjustmentRequestPage = () => {
 
   return (
     <div className="attendance-adjustment-page">
-      <h2>Attendance Adjustment</h2>
+      {/* <h2>Attendance Adjustment</h2> */}
       {(user?.role === 'Employee' || user?.role === 'Manager') && (
         <AttendanceAdjustmentRequestForm onFormSubmit={handleFormSubmit} />
       )}

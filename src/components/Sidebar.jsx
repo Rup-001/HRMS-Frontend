@@ -147,7 +147,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
           </li>
         )}
       </ul>
-      <div className="sidebar-footer">
+      {/* <div className="sidebar-footer">
         <li className="user-dropdown">
           <div className="user-profile" onClick={() => toggleDropdown('user')}>
             <img
@@ -182,7 +182,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
             </ul>
           )}
         </li>
-      </div>
+      </div> */}
     </div>
   );
 };

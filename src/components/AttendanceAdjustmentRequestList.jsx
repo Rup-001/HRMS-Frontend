@@ -8,6 +8,8 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');  // ← ADD THIS
+// const [managerComment, setManagerComment] = useState({});
   const [managerComment, setManagerComment] = useState({});
   const [hrComment, setHrComment] = useState({});
 
@@ -80,6 +82,7 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
       {requests.length === 0 ? (
         <p className="employee-message">No adjustment requests found.</p>
       ) : (
+        <div className="table-wrapper">
         <table className="employee-table">
           <thead>
             <tr>
@@ -110,7 +113,10 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
                 <td>{request.managerApproverId?.fullName || 'N/A'}</td>
                 <td>{request.hrApproverId?.fullName || 'N/A'}</td>
                 <td>
-                  {request.status === 'pending_manager_approval' && (isManager || isSuperAdmin || isCompanyAdmin || isCLevelExecutive) && user?.employeeId === request.managerApproverId?._id && (
+                  {/* {request.status === 'pending_manager_approval' && (isManager || isSuperAdmin || isCompanyAdmin || isCLevelExecutive) && user?.employeeId === request.managerApproverId?._id && ( */}
+                    {request.status === 'pending_manager_approval' && 
+  (isManager || isCLevelExecutive || isSuperAdmin || isCompanyAdmin) && 
+  user?.employeeId === request.managerApproverId?._id && (
                     <div className="review-actions">
                       <textarea
                         placeholder="Manager comment"
@@ -122,7 +128,9 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
                       <button onClick={() => handleManagerReview(request._id, 'denied_by_manager')} className="employee-button deny-button">Deny</button>
                     </div>
                   )}
-                  {request.status === 'pending_hr_approval' && (isHR || isSuperAdmin || isCompanyAdmin || isCLevelExecutive) && (
+                  {/* {request.status === 'pending_hr_approval' && (isHR || isSuperAdmin || isCompanyAdmin || isCLevelExecutive) && ( */}
+                    {request.status === 'pending_hr_approval' && 
+  (isHR || isCLevelExecutive || isSuperAdmin || isCompanyAdmin) && (
                     <div className="review-actions">
                       <textarea
                         placeholder="HR comment"
@@ -139,6 +147,7 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

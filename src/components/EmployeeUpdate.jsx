@@ -1,3 +1,4 @@
+// src/components/EmployeeUpdate.jsx
 import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -6,13 +7,16 @@ import { getCompanies } from '../api/company';
 import { getEmployees as getAllEmployees } from '../api/employee';
 import { getDepartmentsByCompany } from '../api/department';
 import { getDesignationsByDepartment } from '../api/designation';
-import '../styles/Employee.css';
+import { User, Briefcase, Home, CheckSquare, FileText } from 'lucide-react';
+import '../styles/EmployeeCreate.css'; // ← Reuse same CSS
 
 const EmployeeUpdate = () => {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const canEditRole = user?.role === 'Super Admin' || user?.role === 'HR Manager';
   const navigate = useNavigate();
   const isSuperAdmin = user?.role === 'Super Admin';
+
   const [formData, setFormData] = useState({
     companyId: '',
     fullName: '',
@@ -49,6 +53,7 @@ const EmployeeUpdate = () => {
     resume: null,
     nidCopy: null,
   });
+
   const [companies, setCompanies] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
@@ -58,10 +63,19 @@ const EmployeeUpdate = () => {
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
   const [hasUserAccount, setHasUserAccount] = useState(false);
-  const [createUserChanged, setCreateUserChanged] = useState(false);
+  const [activeTab, setActiveTab] = useState('info');
   const defaultAvatar = '/default-avatar.png';
   const fileFields = ['passportSizePhoto', 'appointmentLetter', 'resume', 'nidCopy'];
 
+  const tabs = [
+    { key: 'info', label: 'Info', icon: <User size={18} /> },
+    { key: 'work', label: 'Work Details', icon: <Briefcase size={18} /> },
+    { key: 'personal', label: 'Personal Info', icon: <Home size={18} /> },
+    { key: 'status', label: 'Status', icon: <CheckSquare size={18} /> },
+    { key: 'documents', label: 'Documents', icon: <FileText size={18} /> },
+  ];
+
+  // Fetch employee + supporting data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -71,6 +85,7 @@ const EmployeeUpdate = () => {
           getCompanies(token),
           getAllEmployees(token),
         ]);
+
         if (employeeData.success && companyData.success && empData.success) {
           const emp = employeeData.data;
           setFormData({
@@ -109,15 +124,11 @@ const EmployeeUpdate = () => {
             resume: null,
             nidCopy: null,
           });
+
           setPreviewImage(emp.passportSizePhoto ? `${import.meta.env.VITE_API_URL}${emp.passportSizePhoto}` : null);
           setHasUserAccount(emp.hasUserAccount || false);
-          console.log('Initial: hasUserAccount:', emp.hasUserAccount, 'formData.createUser:', false);
           setCompanies(companyData.data);
           setEmployeesList(empData.data);
-          // Automatically select the first company if available and no companyId is set
-          if (!emp.companyId && companyData.data.length > 0) {
-            setFormData(prev => ({ ...prev, companyId: companyData.data[0]._id }));
-          }
         } else {
           setError('Failed to fetch data');
         }
@@ -130,58 +141,28 @@ const EmployeeUpdate = () => {
     fetchData();
   }, [id]);
 
+  // Fetch departments & designations
   useEffect(() => {
-    const fetchDepartments = async () => {
-      if (formData.companyId) {
-        try {
-          const token = localStorage.getItem('token');
-          console.log('Fetching departments for companyId:', formData.companyId);
-          const data = await getDepartmentsByCompany(formData.companyId, token);
-          if (data.success) {
-            console.log('Fetched departments:', data.data);
-            setDepartments(data.data);
-          } else {
-            setError(data.error || 'Failed to fetch departments');
-            console.error('Error fetching departments:', data.error);
-          }
-        } catch (err) {
-          setError(err.error || 'Something went wrong');
-          console.error('Exception fetching departments:', err);
-        }
-      } else {
-        setDepartments([]);
-        console.log('companyId is empty, resetting departments.');
-      }
-    };
-    fetchDepartments();
+    if (formData.companyId) {
+      (async () => {
+        const token = localStorage.getItem('token');
+        const data = await getDepartmentsByCompany(formData.companyId, token);
+        if (data.success) setDepartments(data.data);
+      })();
+    } else setDepartments([]);
   }, [formData.companyId]);
 
   useEffect(() => {
-    const fetchDesignations = async () => {
-      if (formData.department) {
-        try {
-          const token = localStorage.getItem('token');
-          console.log('Fetching designations for departmentId:', formData.department);
-          const data = await getDesignationsByDepartment(formData.department, token);
-          if (data.success) {
-            console.log('Fetched designations:', data.data);
-            setDesignations(data.data);
-          } else {
-            setError(data.error || 'Failed to fetch designations');
-            console.error('Error fetching designations:', data.error);
-          }
-        } catch (err) {
-          setError(err.error || 'Something went wrong');
-          console.error('Exception fetching designations:', err);
-        }
-      } else {
-        setDesignations([]);
-        console.log('departmentId is empty, resetting designations.');
-      }
-    };
-    fetchDesignations();
+    if (formData.department) {
+      (async () => {
+        const token = localStorage.getItem('token');
+        const data = await getDesignationsByDepartment(formData.department, token);
+        if (data.success) setDesignations(data.data);
+      })();
+    } else setDesignations([]);
   }, [formData.department]);
 
+  // Age of service
   useEffect(() => {
     if (formData.joiningDate) {
       const today = new Date();
@@ -197,28 +178,25 @@ const EmployeeUpdate = () => {
     const { name, value, type, checked, files } = e.target;
     if (fileFields.includes(name)) {
       const file = files[0];
-      setFormData({ ...formData, [name]: file });
+      setFormData(prev => ({ ...prev, [name]: file }));
       if (name === 'passportSizePhoto') {
         setPreviewImage(file ? URL.createObjectURL(file) : null);
       }
-    } else if (name === 'role' && !isSuperAdmin) {
-      // Prevent change if not super admin
-      return;
+    // } else if (name === 'role' && !isSuperAdmin) {
+    // } else if (name === 'role' && user?.role !== 'Super Admin' && user?.role !== 'C-Level Executive' && user?.role !== 'HR Manager') {
+    } else if (name === 'role' && !canEditRole) { 
+    return;
     } else {
-      setFormData(prevFormData => {
-        const newFormData = { ...prevFormData, [name]: type === 'checkbox' ? checked : value };
-        if (name === 'createUser') {
-          setCreateUserChanged(true);
-          console.log('Updated formData.createUser:', newFormData.createUser, 'createUserChanged:', true);
-        }
+      setFormData(prev => {
+        const newData = { ...prev, [name]: type === 'checkbox' ? checked : value };
         if (name === 'companyId') {
-          newFormData.department = '';
-          newFormData.designation = '';
+          newData.department = '';
+          newData.designation = '';
         }
         if (name === 'department') {
-          newFormData.designation = '';
+          newData.designation = '';
         }
-        return newFormData;
+        return newData;
       });
     }
   };
@@ -237,7 +215,6 @@ const EmployeeUpdate = () => {
           formDataToSend.append(key, formData[key]);
         } else if ((key === 'createUser' || key === 'createDeviceUser') && !hasUserAccount && formData[key]) {
           formDataToSend.append(key, 'true');
-          console.log(`Appending ${key}: true to FormData`);
         } else if (key !== 'createUser' && formData[key] !== undefined && formData[key] !== null && formData[key] !== '') {
           formDataToSend.append(key, formData[key].toString());
         }
@@ -255,440 +232,292 @@ const EmployeeUpdate = () => {
     }
   };
 
-  if (loading) return <div className="employee-message">Loading...</div>;
+  if (loading) return <div className="employee-create-container"><p className="message">Loading...</p></div>;
 
   return (
-    <div className="employee-container">
-      <h2 className="employee-title">Update Employee</h2>
-      <form onSubmit={handleSubmit} className="employee-form" encType="multipart/form-data">
-        <div className="form-grid">
-          {/* Required fields top */}
-          <div className="form-group">
-            <label htmlFor="fullName">Full Name *</label>
-            <input
-              type="text"
-              id="fullName"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="employee-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="newEmployeeCode">New Employee Code *</label>
-            <input
-              type="text"
-              id="newEmployeeCode"
-              name="newEmployeeCode"
-              value={formData.newEmployeeCode}
-              onChange={handleChange}
-              className="employee-input"
-              required
-              readOnly
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="createDeviceUser">Create Device User</label>
-            <input
-              type="checkbox"
-              id="createDeviceUser"
-              name="createDeviceUser"
-              checked={formData.createDeviceUser}
-              onChange={handleChange}
-              className="employee-checkbox"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="companyId">Company *</label>
-            <select
-              id="companyId"
-              name="companyId"
-              value={formData.companyId}
-              onChange={handleChange}
-              className="employee-input"
-              required
-            >
-              <option value="">Select Company</option>
-              {companies.map((company) => (
-                <option key={company._id} value={company._id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="department">Department *</label>
-            <select
-              id="department"
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              className="employee-input"
-              required
-            >
-              <option value="">Select Department</option>
-              {departments.map((dept) => (
-                <option key={dept._id} value={dept._id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="designation">Designation *</label>
-            <select
-              id="designation"
-              name="designation"
-              value={formData.designation}
-              onChange={handleChange}
-              className="employee-input"
-              required
-            >
-              <option value="">Select Designation</option>
-              {designations.map((desig) => (
-                <option key={desig._id} value={desig._id}>
-                  {desig.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="email">Email {(hasUserAccount || formData.createUser) ? '*' : ''}</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="employee-input"
-              required={hasUserAccount || formData.createUser}
-            />
-          </div>
+    <div className="employee-create-container">
+      <h2 className="employee-create-title">Update Employee</h2>
 
-          {/* Optional fields */}
-          <div className="form-group">
-            <label htmlFor="oldEmployeeCode">Old Employee Code</label>
-            <input
-              type="text"
-              id="oldEmployeeCode"
-              name="oldEmployeeCode"
-              value={formData.oldEmployeeCode}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="deviceUserId">Device User ID</label>
-            <input
-              type="text"
-              id="deviceUserId"
-              name="deviceUserId"
-              value={formData.deviceUserId}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="currentDesignation">Current Designation</label>
-            <input
-              type="text"
-              id="currentDesignation"
-              name="currentDesignation"
-              value={formData.currentDesignation}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="lastWorkingDay">Last Working Day</label>
-            <input
-              type="date"
-              id="lastWorkingDay"
-              name="lastWorkingDay"
-              value={formData.lastWorkingDay}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="ageOfService">Age of Service</label>
-            <input
-              type="text"
-              id="ageOfService"
-              name="ageOfService"
-              value={formData.ageOfService}
-              className="employee-input"
-              readOnly
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="personalPhoneNumber">Personal Phone Number</label>
-            <input
-              type="text"
-              id="personalPhoneNumber"
-              name="personalPhoneNumber"
-              value={formData.personalPhoneNumber}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="emergencyContactNumber">Emergency Contact Number</label>
-            <input
-              type="text"
-              id="emergencyContactNumber"
-              name="emergencyContactNumber"
-              value={formData.emergencyContactNumber}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="hasIdCard">Has ID Card</label>
-            <input
-              type="checkbox"
-              id="hasIdCard"
-              name="hasIdCard"
-              checked={formData.hasIdCard}
-              onChange={handleChange}
-              className="employee-checkbox"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="idCardStatus">ID Card Status</label>
-            <input
-              type="text"
-              id="idCardStatus"
-              name="idCardStatus"
-              value={formData.idCardStatus}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="presentAddress">Present Address</label>
-            <input
-              type="text"
-              id="presentAddress"
-              name="presentAddress"
-              value={formData.presentAddress}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="permanentAddress">Permanent Address</label>
-            <input
-              type="text"
-              id="permanentAddress"
-              name="permanentAddress"
-              value={formData.permanentAddress}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="gender">Gender</label>
-            <select
-              id="gender"
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="employee-input"
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="dob">Date of Birth</label>
-            <input
-              type="date"
-              id="dob"
-              name="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="bloodGroup">Blood Group</label>
-            <select
-              id="bloodGroup"
-              name="bloodGroup"
-              value={formData.bloodGroup}
-              onChange={handleChange}
-              className="employee-input"
-            >
-              <option value="">Select Blood Group</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="nidPassportNumber">NID/Passport Number</label>
-            <input
-              type="text"
-              id="nidPassportNumber"
-              name="nidPassportNumber"
-              value={formData.nidPassportNumber}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="fatherName">Father's Name</label>
-            <input
-              type="text"
-              id="fatherName"
-              name="fatherName"
-              value={formData.fatherName}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="motherName">Mother's Name</label>
-            <input
-              type="text"
-              id="motherName"
-              name="motherName"
-              value={formData.motherName}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="employeeStatus">Employee Status</label>
-            <select
-              id="employeeStatus"
-              name="employeeStatus"
-              value={formData.employeeStatus}
-              onChange={handleChange}
-              className="employee-input"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="terminated">Terminated</option>
-              <option value="resigned">Resigned</option>
-              <option value="probation">Probation</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="separationType">Separation Type</label>
-            <input
-              type="text"
-              id="separationType"
-              name="separationType"
-              value={formData.separationType}
-              onChange={handleChange}
-              className="employee-input"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="managerId">Manager</label>
-            <select
-              id="managerId"
-              name="managerId"
-              value={formData.managerId}
-              onChange={handleChange}
-              className="employee-input"
-            >
-              <option value="">No Manager</option>
-              {employeesList.map((emp) => (
-                <option key={emp._id} value={emp._id}>
-                  {emp.fullName} ({emp.newEmployeeCode})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="createUser">
-              Create User Account
-              {hasUserAccount && (
-                <span className="tooltip-text" title="User account already exists and cannot be modified">
-                  (Account Exists)
-                </span>
+      {/* Tab Bar */}
+      <div className="tab-bar">
+        {tabs.map(tab => (
+          <button
+            key={tab.key}
+            type="button"
+            className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.icon} <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <form onSubmit={handleSubmit} className="employee-create-form" encType="multipart/form-data">
+        {/* === INFO TAB === */}
+        {activeTab === 'info' && (
+          <div className="section-card">
+            <div className="section-header">
+              <User size={20} />
+              <h3>Basic Information</h3>
+            </div>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Full Name *</label>
+                <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label>New Employee Code *</label>
+                <input type="text" name="newEmployeeCode" value={formData.newEmployeeCode} readOnly />
+              </div>
+              <div className="form-group">
+                <label>Company *</label>
+                <select name="companyId" value={formData.companyId} onChange={handleChange} required>
+                  <option value="">Select</option>
+                  {companies.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+
+                <label>Role *</label>
+<select
+  name="role"
+  value={formData.role}
+  onChange={handleChange}
+  required
+  disabled={!canEditRole}
+>
+  <option value="Employee">Employee</option>
+  {canEditRole && (
+    <>
+      <option value="Manager">Manager</option>
+      <option value="HR Manager">HR Manager</option>
+      <option value="Company Admin">Company Admin</option>
+      {user?.role === 'Super Admin' && <option value="Super Admin">Super Admin</option>}
+      <option value="C-Level Executive">C-Level Executive</option>
+    </>
+  )}
+</select>
+                {/* <label>Role *</label>
+                <select name="role" value={formData.role} onChange={handleChange} required>
+                  <option value="Employee">Employee</option>
+                  { (
+                    <>
+                      <option value="Manager">Manager</option>
+                      <option value="HR Manager">HR Manager</option>
+                      <option value="Company Admin">Company Admin</option>
+                      <option value="Super Admin">Super Admin</option>
+                      <option value="C-Level Executive">C-Level Executive</option>
+                    </>
+                  )}
+                </select> */}
+              </div>
+              <div className="form-group">
+                <label>Create User Account</label>
+                <input
+                  type="checkbox"
+                  name="createUser"
+                  checked={hasUserAccount || formData.createUser}
+                  onChange={handleChange}
+                  disabled={hasUserAccount}
+                />
+                {hasUserAccount && <small style={{ color: '#aaa', marginLeft: '8px' }}>(Account exists)</small>}
+              </div>
+              {(hasUserAccount || formData.createUser) && (
+                <div className="form-group full-span">
+                  <label>Email *</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+                </div>
               )}
-            </label>
-            <input
-              type="checkbox"
-              id="createUser"
-              name="createUser"
-              checked={hasUserAccount || formData.createUser}
-              onChange={handleChange}
-              className="employee-checkbox"
-              disabled={hasUserAccount}
-            />
-          </div>
-
-          {/* Uploads bottom */}
-          <div className="form-group">
-            <label htmlFor="passportSizePhoto">Passport Size Photo</label>
-            <div className="image-preview-container">
-              <img
-                src={previewImage || defaultAvatar}
-                alt="Profile Preview"
-                className="employee-profile-image"
-                style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "50%" }}
-                onError={(e) => { e.target.src = defaultAvatar; }}
-              />
-              <input
-                type="file"
-                id="passportSizePhoto"
-                name="passportSizePhoto"
-                accept="image/jpeg,image/png,image/jpg"
-                onChange={handleChange}
-                className="employee-input"
-              />
             </div>
           </div>
-          <div className="form-group">
-            <label htmlFor="appointmentLetter">Appointment Letter</label>
-            <input
-              type="file"
-              id="appointmentLetter"
-              name="appointmentLetter"
-              accept="application/pdf"
-              onChange={handleChange}
-              className="employee-input"
-            />
+        )}
+
+        {/* === WORK DETAILS TAB === */}
+        {activeTab === 'work' && (
+          <div className="section-card">
+            <div className="section-header">
+              <Briefcase size={20} />
+              <h3>Work Details</h3>
+            </div>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Joining Date *</label>
+                <input type="date" name="joiningDate" value={formData.joiningDate} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label>Department *</label>
+                <select name="department" value={formData.department} onChange={handleChange} required>
+                  <option value="">Select</option>
+                  {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Designation *</label>
+                <select name="designation" value={formData.designation} onChange={handleChange} required>
+                  <option value="">Select</option>
+                  {designations.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Manager</label>
+                <select name="managerId" value={formData.managerId} onChange={handleChange}>
+                  <option value="">None</option>
+                  {employeesList.map(e => <option key={e._id} value={e._id}>{e.fullName}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Create Device User</label>
+                <input type="checkbox" name="createDeviceUser" checked={formData.createDeviceUser} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Age of Service</label>
+                <input type="text" value={formData.ageOfService} readOnly />
+              </div>
+            </div>
           </div>
-          <div className="form-group">
-            <label htmlFor="resume">Resume</label>
-            <input
-              type="file"
-              id="resume"
-              name="resume"
-              accept="application/pdf"
-              onChange={handleChange}
-              className="employee-input"
-            />
+        )}
+
+        {/* === PERSONAL TAB === */}
+        {activeTab === 'personal' && (
+          <div className="section-card">
+            <div className="section-header">
+              <Home size={20} />
+              <h3>Personal Info</h3>
+            </div>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Phone</label>
+                <input type="text" name="personalPhoneNumber" value={formData.personalPhoneNumber} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Emergency Contact</label>
+                <input type="text" name="emergencyContactNumber" value={formData.emergencyContactNumber} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Gender</label>
+                <select name="gender" value={formData.gender} onChange={handleChange}>
+                  <option value="">Select</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Date of Birth</label>
+                <input type="date" name="dob" value={formData.dob} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Blood Group</label>
+                <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange}>
+                  <option value="">Select</option>
+                  {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg}>{bg}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>NID / Passport</label>
+                <input type="text" name="nidPassportNumber" value={formData.nidPassportNumber} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Father's Name</label>
+                <input type="text" name="fatherName" value={formData.fatherName} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Mother's Name</label>
+                <input type="text" name="motherName" value={formData.motherName} onChange={handleChange} />
+              </div>
+              <div className="form-group full-span">
+                <label>Present Address</label>
+                <input type="text" name="presentAddress" value={formData.presentAddress} onChange={handleChange} />
+              </div>
+              <div className="form-group full-span">
+                <label>Permanent Address</label>
+                <input type="text" name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} />
+              </div>
+            </div>
           </div>
-          <div className="form-group">
-            <label htmlFor="nidCopy">NID Copy</label>
-            <input
-              type="file"
-              id="nidCopy"
-              name="nidCopy"
-              accept="image/jpeg,image/png,image/jpg,application/pdf"
-              onChange={handleChange}
-              className="employee-input"
-            />
+        )}
+
+        {/* === STATUS TAB === */}
+        {activeTab === 'status' && (
+          <div className="section-card">
+            <div className="section-header">
+              <CheckSquare size={20} />
+              <h3>Status & Permissions</h3>
+            </div>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Has ID Card</label>
+                <input type="checkbox" name="hasIdCard" checked={formData.hasIdCard} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Employee Status</label>
+                <select name="employeeStatus" value={formData.employeeStatus} onChange={handleChange}>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="probation">Probation</option>
+                  <option value="resigned">Resigned</option>
+                  <option value="terminated">Terminated</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Last Working Day</label>
+                <input type="date" name="lastWorkingDay" value={formData.lastWorkingDay} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Separation Type</label>
+                <input type="text" name="separationType" value={formData.separationType} onChange={handleChange} />
+              </div>
+              {formData.hasIdCard && (
+                <div className="form-group full-span">
+                  <label>ID Card Status</label>
+                  <input type="text" name="idCardStatus" value={formData.idCardStatus} onChange={handleChange} />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        {error && <p className="employee-message employee-error">{error}</p>}
-        {success && <p className="employee-message employee-success">{success}</p>}
-        <button type="submit" className="employee-button" disabled={loading}>
+        )}
+
+        {/* === DOCUMENTS TAB === */}
+        {activeTab === 'documents' && (
+          <div className="section-card">
+            <div className="section-header">
+              <FileText size={20} />
+              <h3>Upload Documents</h3>
+            </div>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Passport Size Photo</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img
+                    src={previewImage || defaultAvatar}
+                    alt="Preview"
+                    style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: '2px solid #ddd' }}
+                    onError={e => e.target.src = defaultAvatar}
+                  />
+                  <input type="file" name="passportSizePhoto" accept="image/*" onChange={handleChange} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Appointment Letter</label>
+                <input type="file" name="appointmentLetter" accept=".pdf" onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Resume</label>
+                <input type="file" name="resume" accept=".pdf" onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>NID Copy</label>
+                <input type="file" name="nidCopy" accept="image/*,.pdf" onChange={handleChange} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Messages & Submit */}
+        {error && <p className="message error">{error}</p>}
+        {success && <p className="message success">{success}</p>}
+
+        <button type="submit" className="submit-button" disabled={loading}>
           {loading ? 'Updating...' : 'Update Employee'}
         </button>
       </form>

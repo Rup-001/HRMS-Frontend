@@ -184,3 +184,28 @@
 .employee-success {
   color: #50c878;
 }
+
+.table-wrapper {
+  overflow-x: auto;           /* horizontal scroll */
+  -webkit-overflow-scrolling: touch; /* smooth on mobile */
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.review-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.review-actions textarea {
+  width: 100%;
+  min-height: 50px;
+  resize: vertical;
+}
+
+.review-actions button {
+  width: 100%;
+}
