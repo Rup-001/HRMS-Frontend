@@ -86,11 +86,11 @@ export const generateMissingLeaveEntitlements = async (token) => {
   }
 };
 
-export const getLeaveSummary = async (year, token) => {
+export const getLeaveSummary = async (employeeId, year, token) => {
   try {
     const response = await axios.get(`${API_URL}/api/leave/summary`, {
       headers: { Authorization: `Bearer ${token}` },
-      params: { year },
+      params: { year, employeeId },
     });
     return response.data;
   } catch (error) {

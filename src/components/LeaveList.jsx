@@ -192,7 +192,7 @@ const LeaveList = () => {
               <option value="maternity">Maternity</option>
               <option value="paternity">Paternity</option>
               <option value="bereavement">Bereavement</option>
-              <option value="remote">Remote</option>
+              {/* <option value="remote">Remote</option> */}
             </select>
           </div>
           <div className="form-group">

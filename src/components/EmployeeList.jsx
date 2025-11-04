@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getEmployees, getEmployeeProfile } from '../api/employee';
+import { resendInvitation } from '../api/auth';
 import { getCompanies } from '../api/company';
 import * as XLSX from 'xlsx';
 import '../styles/Employee.css';
@@ -76,6 +77,20 @@ const EmployeeList = () => {
       }
     } catch (err) {
       setError(err.error || 'Failed to fetch employee details');
+    }
+  };
+
+  const handleResendInvitation = async (email) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await resendInvitation(email, token);
+      if (response.success) {
+        alert('Invitation resent successfully');
+      } else {
+        setError(response.error || 'Failed to resend invitation');
+      }
+    } catch (err) {
+      setError(err.error || 'Something went wrong');
     }
   };
 
@@ -155,6 +170,7 @@ const EmployeeList = () => {
                   <th>Company</th>
                   <th>Role</th>
                   <th>Status</th>
+                  <th>Invitation Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -180,6 +196,7 @@ const EmployeeList = () => {
                     <td>{getCompanyName(employee.companyId)}</td>
                     <td>{employee.role || '-'}</td>
                     <td>{employee.employeeStatus || '-'}</td>
+                    <td>{employee.invitationStatus || '-'}</td>
                     <td>
                       <button
                         onClick={() => handleView(employee._id)}
@@ -187,6 +204,14 @@ const EmployeeList = () => {
                       >
                         <Eye className="button-icon" /> View
                       </button>
+                      {['pending', 'expired', 'sent'].includes(employee.invitationStatus) && (
+                        <button
+                          onClick={() => handleResendInvitation(employee.email)}
+                          className="employee-button resend-button"
+                        >
+                          Resend Invitation
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

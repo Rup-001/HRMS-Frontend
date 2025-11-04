@@ -41,3 +41,16 @@ export const initialSetup = async (fullName, email, password, companyName) => {
     throw error.response?.data || { success: false, error: 'Network error' };
   }
 };
+
+export const resendInvitation = async (email, token) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/api/auth/resend-invitation`,
+      { email },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { success: false, error: 'Network error' };
+  }
+};

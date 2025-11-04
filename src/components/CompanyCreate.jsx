@@ -124,7 +124,7 @@ const CompanyCreate = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="employeeIdBase">Employee ID Base</label>
+          <label htmlFor="employeeIdBase">Company ID Base</label>
           <input
             type="number"
             id="employeeIdBase"
@@ -177,6 +177,8 @@ const CompanyCreate = () => {
               <thead>
                 <tr>
                   <th>Name</th>
+                  <th>Abbreviation</th>
+                  <th>Company ID Base</th>
                   <th>Active</th>
                   <th>Created At</th>
                 </tr>
@@ -185,6 +187,8 @@ const CompanyCreate = () => {
                 {currentCompanies.map((company) => (
                   <tr key={company._id}>
                     <td>{company.name || '-'}</td>
+                    <td>{company.abbreviation || '-'}</td>
+                    <td>{company.employeeIdBase || '-'}</td>
                     <td>{company.isActive ? 'Yes' : 'No'}</td>
                     <td>{new Date(company.createdAt).toLocaleDateString()}</td>
                   </tr>

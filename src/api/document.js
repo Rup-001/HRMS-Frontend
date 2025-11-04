@@ -44,7 +44,17 @@ export const uploadDocument = async (formData, token) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error uploading document:', error);
     return { success: false, error: error.message };
+  }
+};
+
+export const getCommonDocuments = async (token) => {
+  try {
+    const response = await axios.get(`${API_URL}/api/documents/common`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { success: false, error: 'Network error' };
   }
 };

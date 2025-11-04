@@ -47,6 +47,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
             Dashboard
           </Link>
         </li>
+        {/* <li>
+          <Link to="/documents/common" className="sidebar-link" onClick={handleLinkClick}>
+            <FileText className="nav-icon" />
+            Company Documents
+          </Link>
+        </li> */}
         {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && (
           <li>
             <Link to="/employees" className="sidebar-link" onClick={handleLinkClick}>
@@ -116,11 +122,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
                   Remote Requests
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/leave/summary" className="dropdown-item" onClick={handleLinkClick}>
                   Leave Summary
                 </Link>
-              </li>
+              </li> */}
               {(user?.role === 'Super Admin' || user?.role === 'Company Admin' || user?.role === 'HR Manager' || user?.role === 'C-Level Executive') && (
                 <>
                   <li>
@@ -131,6 +137,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
                   <li>
                     <Link to="/leave/entitlements" className="dropdown-item" onClick={handleLinkClick}>
                       Leave Entitlements
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/leave/history" className="dropdown-item" onClick={handleLinkClick}>
+                      Leave History
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/leave/balance" className="dropdown-item" onClick={handleLinkClick}>
+                      Leave Balance
                     </Link>
                   </li>
                 </>

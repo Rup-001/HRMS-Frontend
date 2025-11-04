@@ -63,6 +63,7 @@ const EmployeeUpdate = () => {
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
   const [hasUserAccount, setHasUserAccount] = useState(false);
+  const [hasDeviceUser, setHasDeviceUser] = useState(false);
   const [activeTab, setActiveTab] = useState('info');
   const defaultAvatar = '/default-avatar.png';
   const fileFields = ['passportSizePhoto', 'appointmentLetter', 'resume', 'nidCopy'];
@@ -127,6 +128,7 @@ const EmployeeUpdate = () => {
 
           setPreviewImage(emp.passportSizePhoto ? `${import.meta.env.VITE_API_URL}${emp.passportSizePhoto}` : null);
           setHasUserAccount(emp.hasUserAccount || false);
+          setHasDeviceUser(!!emp.deviceUserId);
           setCompanies(companyData.data);
           setEmployeesList(empData.data);
         } else {
@@ -367,7 +369,14 @@ const EmployeeUpdate = () => {
               </div>
               <div className="form-group">
                 <label>Create Device User</label>
-                <input type="checkbox" name="createDeviceUser" checked={formData.createDeviceUser} onChange={handleChange} />
+                <input
+                  type="checkbox"
+                  name="createDeviceUser"
+                  checked={hasDeviceUser || formData.createDeviceUser}
+                  onChange={handleChange}
+                  disabled={hasDeviceUser}
+                />
+                {hasDeviceUser && <small style={{ color: '#aaa', marginLeft: '8px' }}>(Device user exists)</small>}
               </div>
               <div className="form-group">
                 <label>Age of Service</label>

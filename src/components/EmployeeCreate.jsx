@@ -11,12 +11,16 @@
 
 // const EmployeeCreate = () => {
 //   const { user } = useContext(AuthContext);
-//   const canEditRole = user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'C-Level Executive';
+//   const navigate = useNavigate();
+
+//   // Only Super Admin and HR Manager can edit role
+//   const canEditRole = user?.role === 'Super Admin' || user?.role === 'HR Manager';
+//   const isSuperAdmin = user?.role === 'Super Admin';
 
 //   const [formData, setFormData] = useState({
 //     companyId: '',
 //     fullName: '',
-//     role: isSuperAdmin ? '' : 'Employee',
+//     role: canEditRole ? '' : 'Employee', // Default to Employee if not authorized
 //     joiningDate: '',
 //     department: '',
 //     designation: '',
@@ -126,14 +130,18 @@
 //   // Handle input changes
 //   const handleChange = (e) => {
 //     const { name, value, type, checked, files } = e.target;
+
+//     // Prevent role change if not authorized
+//     if (name === 'role' && !canEditRole) {
+//       return;
+//     }
+
 //     if (fileFields.includes(name)) {
 //       const file = files[0];
 //       setFormData(prev => ({ ...prev, [name]: file }));
 //       if (name === 'passportSizePhoto') {
 //         setPreviewImage(file ? URL.createObjectURL(file) : null);
 //       }
-//     } else if (name === 'role' && !isSuperAdmin) {
-//       return;
 //     } else {
 //       setFormData(prev => {
 //         const newData = { ...prev, [name]: type === 'checkbox' ? checked : value };
@@ -150,10 +158,67 @@
 //   };
 
 //   // Handle form submission
+//   // const handleSubmit = async (e) => {
+//   //   e.preventDefault();
+//   //   setError('');
+//   //   setSuccess('');
+//   //   setLoading(true);
+//   //   try {
+//   //     const token = localStorage.getItem('token');
+//   //     const formDataToSend = new FormData();
+//   //     Object.keys(formData).forEach(key => {
+//   //       if (fileFields.includes(key) && formData[key]) {
+//   //         formDataToSend.append(key, formData[key]);
+//   //       } else if ((key === 'createUser' || key === 'createDeviceUser') && formData[key]) {
+//   //         formDataToSend.append(key, 'true');
+//   //       } else if (formData[key] !== '' && formData[key] !== null && formData[key] !== undefined) {
+//   //         formDataToSend.append(key, formData[key].toString());
+//   //       }
+//   //     });
+//   //     const data = await createEmployee(formDataToSend, token);
+//   //     if (data.success) {
+//   //       setSuccess('Employee created successfully!');
+//   //       setTimeout(() => navigate('/employees'), 2000);
+//   //     }
+//   //   } catch (err) {
+//   //     setError(err.response?.data?.error || 'Something went wrong');
+//   //   } finally {
+//   //     setLoading(false);
+//   //   }
+//   // };
+
+//   // Handle form submission
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 //     setError('');
 //     setSuccess('');
+
+//     // Validation
+//     const requiredFields = {
+//       info: ['fullName', 'companyId', 'role'],
+//       work: ['joiningDate', 'department', 'designation'],
+//     };
+
+//     if (formData.createUser) {
+//       requiredFields.info.push('email');
+//     }
+
+//     const missingFields = [];
+//     for (const tab in requiredFields) {
+//       for (const field of requiredFields[tab]) {
+//         if (!formData[field]) {
+//           missingFields.push({ field, tab });
+//         }
+//       }
+//     }
+
+//     if (missingFields.length > 0) {
+//       const firstMissing = missingFields[0];
+//       setError(`Please fill out all required fields. Missing: ${firstMissing.field}`);
+//       setActiveTab(firstMissing.tab);
+//       return;
+//     }
+
 //     setLoading(true);
 //     try {
 //       const token = localStorage.getItem('token');
@@ -221,14 +286,20 @@
 //               </div>
 //               <div className="form-group">
 //                 <label>Role *</label>
-//                 <select name="role" value={formData.role} onChange={handleChange} required disabled={!isSuperAdmin}>
+//                 <select
+//                   name="role"
+//                   value={formData.role}
+//                   onChange={handleChange}
+//                   required
+//                   disabled={!canEditRole}
+//                 >
 //                   <option value="Employee">Employee</option>
-//                   {isSuperAdmin && (
+//                   {canEditRole && (
 //                     <>
 //                       <option value="Manager">Manager</option>
 //                       <option value="HR Manager">HR Manager</option>
 //                       <option value="Company Admin">Company Admin</option>
-//                       <option value="Super Admin">Super Admin</option>
+//                       {isSuperAdmin && <option value="Super Admin">Super Admin</option>}
 //                       <option value="C-Level Executive">C-Level Executive</option>
 //                     </>
 //                   )}
@@ -468,14 +539,13 @@ const EmployeeCreate = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Only Super Admin and HR Manager can edit role
   const canEditRole = user?.role === 'Super Admin' || user?.role === 'HR Manager';
   const isSuperAdmin = user?.role === 'Super Admin';
 
   const [formData, setFormData] = useState({
     companyId: '',
     fullName: '',
-    role: canEditRole ? '' : 'Employee', // Default to Employee if not authorized
+    role: canEditRole ? '' : 'Employee',
     joiningDate: '',
     department: '',
     designation: '',
@@ -514,6 +584,9 @@ const EmployeeCreate = () => {
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [activeTab, setActiveTab] = useState('info');
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+  const [loadingDesignations, setLoadingDesignations] = useState(false);
+
   const defaultAvatar = '/default-avatar.png';
   const fileFields = ['passportSizePhoto', 'appointmentLetter', 'resume', 'nidCopy'];
 
@@ -525,7 +598,7 @@ const EmployeeCreate = () => {
     { key: 'documents', label: 'Documents', icon: <FileText size={18} /> },
   ];
 
-  // Fetch initial data
+  // Fetch companies and employees
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -537,9 +610,6 @@ const EmployeeCreate = () => {
         if (companyData.success && empData.success) {
           setCompanies(companyData.data);
           setEmployeesList(empData.data);
-          if (companyData.data.length > 0) {
-            setFormData(prev => ({ ...prev, companyId: companyData.data[0]._id }));
-          }
         }
       } catch (err) {
         setError('Failed to load data');
@@ -552,22 +622,44 @@ const EmployeeCreate = () => {
   useEffect(() => {
     if (formData.companyId) {
       (async () => {
+        setLoadingDepartments(true);
+        setDepartments([]);
+        setDesignations([]);
+        setFormData(prev => ({ ...prev, department: '', designation: '' }));
+
         const token = localStorage.getItem('token');
         const data = await getDepartmentsByCompany(formData.companyId, token);
-        if (data.success) setDepartments(data.data);
+        if (data.success) {
+          setDepartments(data.data);
+        }
+        setLoadingDepartments(false);
       })();
-    } else setDepartments([]);
+    } else {
+      setDepartments([]);
+      setDesignations([]);
+      setFormData(prev => ({ ...prev, department: '', designation: '' }));
+    }
   }, [formData.companyId]);
 
   // Fetch designations when department changes
   useEffect(() => {
     if (formData.department) {
       (async () => {
+        setLoadingDesignations(true);
+        setDesignations([]);
+        setFormData(prev => ({ ...prev, designation: '' }));
+
         const token = localStorage.getItem('token');
         const data = await getDesignationsByDepartment(formData.department, token);
-        if (data.success) setDesignations(data.data);
+        if (data.success) {
+          setDesignations(data.data);
+        }
+        setLoadingDesignations(false);
       })();
-    } else setDesignations([]);
+    } else {
+      setDesignations([]);
+      setFormData(prev => ({ ...prev, designation: '' }));
+    }
   }, [formData.department]);
 
   // Calculate Age of Service
@@ -579,6 +671,8 @@ const EmployeeCreate = () => {
       const diffMonths = today.getMonth() - join.getMonth();
       const years = diffYears + (diffMonths < 0 ? -1 : 0);
       setFormData(prev => ({ ...prev, ageOfService: `${years} years` }));
+    } else {
+      setFormData(prev => ({ ...prev, ageOfService: '' }));
     }
   }, [formData.joiningDate]);
 
@@ -586,10 +680,7 @@ const EmployeeCreate = () => {
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
-    // Prevent role change if not authorized
-    if (name === 'role' && !canEditRole) {
-      return;
-    }
+    if (name === 'role' && !canEditRole) return;
 
     if (fileFields.includes(name)) {
       const file = files[0];
@@ -617,6 +708,34 @@ const EmployeeCreate = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    // Validation
+    const missingFields = [];
+
+    // Always required
+    if (!formData.fullName) missingFields.push({ field: 'fullName', tab: 'info' });
+    if (!formData.companyId) missingFields.push({ field: 'companyId', tab: ' info' });
+    if (!formData.role) missingFields.push({ field: 'role', tab: 'info' });
+
+    // Work tab (only if company selected)
+    if (formData.companyId) {
+      if (!formData.joiningDate) missingFields.push({ field: 'joiningDate', tab: 'work' });
+      if (!formData.department) missingFields.push({ field: 'department', tab: 'work' });
+      if (!formData.designation) missingFields.push({ field: 'designation', tab: 'work' });
+    }
+
+    // Email if createUser
+    if (formData.createUser && !formData.email) {
+      missingFields.push({ field: 'email', tab: 'info' });
+    }
+
+    if (missingFields.length > 0) {
+      const first = missingFields[0];
+      setError(`Please fill: ${first.field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+      setActiveTab(first.tab);
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -630,6 +749,7 @@ const EmployeeCreate = () => {
           formDataToSend.append(key, formData[key].toString());
         }
       });
+
       const data = await createEmployee(formDataToSend, token);
       if (data.success) {
         setSuccess('Employee created successfully!');
@@ -641,6 +761,11 @@ const EmployeeCreate = () => {
       setLoading(false);
     }
   };
+
+  // Filter managers by selected company
+  const managersInCompany = employeesList.filter(
+    emp => emp.companyId === formData.companyId
+  );
 
   return (
     <div className="employee-create-container">
@@ -673,40 +798,41 @@ const EmployeeCreate = () => {
                 <label>Full Name *</label>
                 <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required />
               </div>
+
               <div className="form-group">
                 <label>Company *</label>
                 <select name="companyId" value={formData.companyId} onChange={handleChange} required>
-                  <option value="">Select</option>
+                  <option value="">Select Company</option>
                   {companies.map(c => (
                     <option key={c._id} value={c._id}>{c.name}</option>
                   ))}
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Role *</label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  required
-                  disabled={!canEditRole}
-                >
-                  <option value="Employee">Employee</option>
-                  {canEditRole && (
-                    <>
-                      <option value="Manager">Manager</option>
-                      <option value="HR Manager">HR Manager</option>
-                      <option value="Company Admin">Company Admin</option>
-                      {isSuperAdmin && <option value="Super Admin">Super Admin</option>}
-                      <option value="C-Level Executive">C-Level Executive</option>
-                    </>
-                  )}
-                </select>
+                {canEditRole ? (
+                  <select name="role" value={formData.role} onChange={handleChange} required>
+                    <option value="">Select Role</option>
+                    <option value="Employee">Employee</option>
+                    <option value="Manager">Manager</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="Company Admin">Company Admin</option>
+                    {isSuperAdmin && <option value="Super Admin">Super Admin</option>}
+                    <option value="C-Level Executive">C-Level Executive</option>
+                  </select>
+                ) : (
+                  <select name="role" value="Employee" disabled>
+                    <option value="Employee">Employee</option>
+                  </select>
+                )}
               </div>
+
               <div className="form-group">
                 <label>Create User Account</label>
                 <input type="checkbox" name="createUser" checked={formData.createUser} onChange={handleChange} />
               </div>
+
               {formData.createUser && (
                 <div className="form-group full-span">
                   <label>Email *</label>
@@ -729,37 +855,46 @@ const EmployeeCreate = () => {
                 <label>Joining Date *</label>
                 <input type="date" name="joiningDate" value={formData.joiningDate} onChange={handleChange} required />
               </div>
+
               <div className="form-group">
                 <label>Department *</label>
-                <select name="department" value={formData.department} onChange={handleChange} required>
-                  <option value="">Select</option>
+                <select name="department" value={formData.department} onChange={handleChange} required disabled={!formData.companyId}>
+                  <option value="">
+                    {loadingDepartments ? 'Loading...' : formData.companyId ? 'Select Department' : 'Select Company First'}
+                  </option>
                   {departments.map(d => (
                     <option key={d._id} value={d._id}>{d.name}</option>
                   ))}
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Designation *</label>
-                <select name="designation" value={formData.designation} onChange={handleChange} required>
-                  <option value="">Select</option>
+                <select name="designation" value={formData.designation} onChange={handleChange} required disabled={!formData.department}>
+                  <option value="">
+                    {loadingDesignations ? 'Loading...' : formData.department ? 'Select Designation' : 'Select Department First'}
+                  </option>
                   {designations.map(d => (
                     <option key={d._id} value={d._id}>{d.name}</option>
                   ))}
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Manager</label>
-                <select name="managerId" value={formData.managerId} onChange={handleChange}>
+                <select name="managerId" value={formData.managerId} onChange={handleChange} disabled={!formData.companyId}>
                   <option value="">None</option>
-                  {employeesList.map(e => (
+                  {managersInCompany.map(e => (
                     <option key={e._id} value={e._id}>{e.fullName}</option>
                   ))}
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Create Device User</label>
                 <input type="checkbox" name="createDeviceUser" checked={formData.createDeviceUser} onChange={handleChange} />
               </div>
+
               <div className="form-group">
                 <label>Age of Service</label>
                 <input type="text" value={formData.ageOfService} readOnly />

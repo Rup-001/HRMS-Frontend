@@ -16,12 +16,12 @@
 //   const [loading, setLoading] = useState(true);
 //   const [showModal, setShowModal] = useState(false);
 //   const [selectedDocument, setSelectedDocument] = useState(null);
-//   const [formData, setFormData] = useState({
-//     documentType: '',
-//     description: '',
-//     document: null,
-//   });
-//   const authorized = user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive';
+
+//   const authorized =
+//     user?.role === 'Super Admin' ||
+//     user?.role === 'HR Manager' ||
+//     user?.role === 'Company Admin' ||
+//     user?.role === 'C-Level Executive';
 
 //   useEffect(() => {
 //     const fetchData = async () => {
@@ -49,22 +49,31 @@
 //     fetchData();
 //   }, []);
 
+//   // === Helper Functions ===
 //   const getEmployeeName = (employeeId) => {
+//     if (!employeeId) return '-';
+//     if (typeof employeeId === 'object' && employeeId.fullName) {
+//       return employeeId.fullName;
+//     }
 //     const employee = employees.find(emp => emp._id === employeeId);
-//     // return employee ? `${employee.fullName} (${employee.newEmployeeCode})` : '-';
-//     return employee ? employee.fullName  : '-';
+//     return employee ? employee.fullName : '-';
 //   };
-// //   const getEmployeeName = (employeeId) => {
-// //   // employeeId might be an object or a string, normalize it
-// //   const idToCheck = typeof employeeId === 'string' ? employeeId : employeeId._id;
-
-// //   const employee = employees.find(emp => emp._id === idToCheck);
-// //   return employee ? employee.fullName : '-';
-// // };
 
 //   const getCompanyName = (companyId) => {
+//     if (!companyId) return '-';
+//     if (typeof companyId === 'object' && companyId.name) {
+//       return companyId.name;
+//     }
 //     const company = companies.find(c => c._id === companyId);
 //     return company ? company.name : '-';
+//   };
+
+//   const getUploaderName = (uploadedBy) => {
+//     if (!uploadedBy) return '-';
+//     if (typeof uploadedBy === 'object') {
+//       return uploadedBy.fullName || '-';   // <-- uses populated fullName
+//     }
+//     return '-';
 //   };
 
 //   const handleView = async (id) => {
@@ -83,6 +92,12 @@
 //     }
 //   };
 
+//   const [formData, setFormData] = useState({
+//     documentType: '',
+//     description: '',
+//     document: null,
+//   });
+
 //   const handleChange = (e) => {
 //     const { name, value, files } = e.target;
 //     setFormData({
@@ -99,25 +114,39 @@
 
 //     try {
 //       const token = localStorage.getItem('token');
+//       if (!token) throw new Error('Authentication token missing');
+
+//       if (!user?.employeeId || !user?.companyId) {
+//         throw new Error('User profile incomplete. Missing employeeId or companyId.');
+//       }
+
+//       if (!formData.documentType) {
+//         setError('Please select a document type');
+//         setLoading(false);
+//         return;
+//       }
+
+//       if (!formData.document) {
+//         setError('Please select a file');
+//         setLoading(false);
+//         return;
+//       }
+
 //       const formDataToSend = new FormData();
 //       formDataToSend.append('employeeId', user.employeeId);
 //       formDataToSend.append('companyId', user.companyId);
 //       formDataToSend.append('documentType', formData.documentType);
-//       formDataToSend.append('description', formData.description);
-//       if (formData.document) {
-//         formDataToSend.append('document', formData.document);
-//       }
+//       formDataToSend.append('description', formData.description || '');
+//       formDataToSend.append('document', formData.document);
 
 //       const response = await uploadDocument(formDataToSend, token);
 
 //       if (response.success) {
 //         setSuccess('Document uploaded successfully!');
-//         setDocuments([...documents, ...response.data]);
-//         setFormData({
-//           documentType: '',
-//           description: '',
-//           document: null,
-//         });
+//         setDocuments(prev => [...prev, ...response.data]);
+//         setFormData({ documentType: '', description: '', document: null });
+//         e.target.reset();
+//         window.location.reload();   // <-- page reload after upload
 //       } else {
 //         setError(response.error || 'Failed to upload document');
 //       }
@@ -136,6 +165,7 @@
 //       <div className="employee-header">
 //         <h2 className="employee-title">Documents</h2>
 //       </div>
+
 //       {authorized && (
 //         <form onSubmit={handleSubmit} className="employee-form" encType="multipart/form-data">
 //           <div className="form-grid">
@@ -187,6 +217,7 @@
 //           </button>
 //         </form>
 //       )}
+
 //       {documents.length === 0 ? (
 //         <div className="employee-message">No documents found.</div>
 //       ) : (
@@ -194,27 +225,22 @@
 //           <table className="employee-table">
 //             <thead>
 //               <tr>
-//                 <th>Employee</th>
+//                 <th>Uploaded By</th>
 //                 <th>Company</th>
 //                 <th>Document Type</th>
-//                 <th>File Name</th>
-//                 <th>Uploaded By</th>
+//                 <th>Description</th>
 //                 <th>Actions</th>
 //               </tr>
 //             </thead>
 //             <tbody>
 //               {documents.map((doc) => (
 //                 <tr key={doc._id}>
-//                   <td>{getEmployeeName(doc.employeeId)}</td>
+//                   <td>{getUploaderName(doc.uploadedBy)}</td>
 //                   <td>{getCompanyName(doc.companyId)}</td>
 //                   <td>{doc.documentType || '-'}</td>
-//                   <td>{doc.fileName || '-'}</td>
-//                   <td>{doc.uploadedBy?.fullName || '-'}</td>
+//                   <td>{doc.description || '-'}</td>
 //                   <td>
-//                     <button
-//                       onClick={() => handleView(doc._id)}
-//                       className="employee-button view-button"
-//                     >
+//                     <button onClick={() => handleView(doc._id)} className="employee-button view-button">
 //                       <Eye className="button-icon" /> View
 //                     </button>
 //                     <a
@@ -232,6 +258,7 @@
 //           </table>
 //         </div>
 //       )}
+
 //       {showModal && selectedDocument && (
 //         <div className="modal-overlay" onClick={() => setShowModal(false)}>
 //           <div className="modal-content employee-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -253,7 +280,7 @@
 //                 <strong>Description:</strong> <span>{selectedDocument.description || '-'}</span>
 //               </div>
 //               <div className="modal-detail-item">
-//                 <strong>Uploaded By:</strong> <span>{selectedDocument.uploadedBy?.email || '-'}</span>
+//                 <strong>Uploaded By:</strong> <span>{getUploaderName(selectedDocument.uploadedBy)}</span>
 //               </div>
 //               <div className="modal-detail-item">
 //                 <strong>File Size:</strong> <span>{(selectedDocument.size / 1024).toFixed(2)} KB</span>
@@ -282,8 +309,6 @@
 // };
 
 // export default DocumentList;
-
-
 
 
 import { useState, useEffect, useContext } from 'react';
@@ -337,33 +362,32 @@ const DocumentList = () => {
     fetchData();
   }, []);
 
-  // Helper functions to get names
+  // === Helper Functions ===
   const getEmployeeName = (employeeId) => {
     if (!employeeId) return '-';
-
-    // If employeeId is an object with fullName, return it directly
     if (typeof employeeId === 'object' && employeeId.fullName) {
       return employeeId.fullName;
     }
-
-    // Otherwise, try to find in employees array
     const employee = employees.find(emp => emp._id === employeeId);
     return employee ? employee.fullName : '-';
   };
 
   const getCompanyName = (companyId) => {
+    if (!companyId) return '-';
+    if (typeof companyId === 'object' && companyId.name) {
+      return companyId.name;
+    }
     const company = companies.find(c => c._id === companyId);
     return company ? company.name : '-';
   };
 
   const getUploaderName = (uploadedBy) => {
     if (!uploadedBy) return '-';
-
-    if (typeof uploadedBy === 'object' && uploadedBy.fullName) {
-      return uploadedBy.fullName;
+    if (typeof uploadedBy === 'object') {
+      // return uploadedBy.fullName || '-';   // <-- uses populated fullName
+      return uploadedBy.fullName || uploadedBy.email || '-';
     }
-
-    return uploadedBy.email || '-';
+    return '-';
   };
 
   const handleView = async (id) => {
@@ -404,25 +428,39 @@ const DocumentList = () => {
 
     try {
       const token = localStorage.getItem('token');
+      if (!token) throw new Error('Authentication token missing');
+
+      if (!user?.employeeId || !user?.companyId) {
+        throw new Error('User profile incomplete. Missing employeeId or companyId.');
+      }
+
+      if (!formData.documentType) {
+        setError('Please select a document type');
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.document) {
+        setError('Please select a file');
+        setLoading(false);
+        return;
+      }
+
       const formDataToSend = new FormData();
       formDataToSend.append('employeeId', user.employeeId);
       formDataToSend.append('companyId', user.companyId);
       formDataToSend.append('documentType', formData.documentType);
-      formDataToSend.append('description', formData.description);
-      if (formData.document) {
-        formDataToSend.append('document', formData.document);
-      }
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('document', formData.document);
 
       const response = await uploadDocument(formDataToSend, token);
 
       if (response.success) {
         setSuccess('Document uploaded successfully!');
-        setDocuments([...documents, ...response.data]);
-        setFormData({
-          documentType: '',
-          description: '',
-          document: null,
-        });
+        setDocuments(prev => [...prev, ...response.data]);
+        setFormData({ documentType: '', description: '', document: null });
+        e.target.reset();
+        window.location.reload();   // <-- page reload after upload
       } else {
         setError(response.error || 'Failed to upload document');
       }
@@ -441,6 +479,7 @@ const DocumentList = () => {
       <div className="employee-header">
         <h2 className="employee-title">Documents</h2>
       </div>
+
       {authorized && (
         <form onSubmit={handleSubmit} className="employee-form" encType="multipart/form-data">
           <div className="form-grid">
@@ -492,6 +531,7 @@ const DocumentList = () => {
           </button>
         </form>
       )}
+
       {documents.length === 0 ? (
         <div className="employee-message">No documents found.</div>
       ) : (
@@ -502,7 +542,6 @@ const DocumentList = () => {
                 <th>Uploaded By</th>
                 <th>Company</th>
                 <th>Document Type</th>
-                {/* <th>File Name</th> */}
                 <th>Description</th>
                 <th>Actions</th>
               </tr>
@@ -510,12 +549,10 @@ const DocumentList = () => {
             <tbody>
               {documents.map((doc) => (
                 <tr key={doc._id}>
-                  <td>{getEmployeeName(doc.employeeId)}</td>
+                  <td>{getUploaderName(doc.uploadedBy)}</td>
                   <td>{getCompanyName(doc.companyId)}</td>
                   <td>{doc.documentType || '-'}</td>
-                  {/* <td>{doc.fileName || '-'}</td> */}
                   <td>{doc.description || '-'}</td>
-                  {/* <td>{doc.Description}</td> */}
                   <td>
                     <button onClick={() => handleView(doc._id)} className="employee-button view-button">
                       <Eye className="button-icon" /> View
@@ -535,6 +572,7 @@ const DocumentList = () => {
           </table>
         </div>
       )}
+
       {showModal && selectedDocument && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content employee-modal-content" onClick={(e) => e.stopPropagation()}>
