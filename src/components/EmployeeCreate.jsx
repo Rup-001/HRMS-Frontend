@@ -828,17 +828,22 @@ const EmployeeCreate = () => {
                 )}
               </div>
 
+              
+
+              <div className="form-group full-span">
+                <label>Email {formData.createUser && '*'}</label>
+                <input 
+                  type="email" 
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleChange} 
+                  required={formData.createUser} 
+                />
+              </div>
               <div className="form-group">
                 <label>Create User Account</label>
                 <input type="checkbox" name="createUser" checked={formData.createUser} onChange={handleChange} />
               </div>
-
-              {formData.createUser && (
-                <div className="form-group full-span">
-                  <label>Email *</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} required />
-                </div>
-              )}
             </div>
           </div>
         )}

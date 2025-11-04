@@ -1,8 +1,8 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { login as loginAPI } from '../api/auth';
-import { ArrowLeft, Lock, Mail } from 'lucide-react';
+import { ArrowLeft, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import '../styles/Login.css';
 
 const Login = () => {
@@ -11,9 +11,38 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordTimer, setPasswordTimer] = useState(null);
+
+  useEffect(() => {
+    // Cleanup timer on component unmount
+    return () => {
+      if (passwordTimer) {
+        clearTimeout(passwordTimer);
+      }
+    };
+  }, [passwordTimer]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const togglePasswordVisibility = () => {
+    if (passwordTimer) {
+      clearTimeout(passwordTimer);
+      setPasswordTimer(null);
+    }
+
+    if (showPassword) {
+      setShowPassword(false);
+    } else {
+      setShowPassword(true);
+      const timer = setTimeout(() => {
+        setShowPassword(false);
+        setPasswordTimer(null);
+      }, 3000);
+      setPasswordTimer(timer);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -77,7 +106,7 @@ const Login = () => {
           <div className="input-group">
             <Lock className="input-icon" />
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -86,6 +115,9 @@ const Login = () => {
               required
               disabled={loading}
             />
+            <div className="password-toggle-icon" onClick={togglePasswordVisibility}>
+              {showPassword ? <EyeOff /> : <Eye />}
+            </div>
           </div>
           {error && <p className="error-message">{error}</p>}
           <button

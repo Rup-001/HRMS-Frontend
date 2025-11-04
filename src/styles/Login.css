@@ -248,3 +248,12 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-15px); }
 }
+
+.password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #aaa;
+}
