@@ -23,7 +23,10 @@ import ProfilePage from './pages/ProfilePage';
 import DocumentListPage from './pages/DocumentListPage';
 import AllLeaveHistoryPage from './pages/AllLeaveHistoryPage';
 import EmployeeLeaveBalancePage from './pages/EmployeeLeaveBalancePage';
+import MyLeaveBalancePage from './pages/MyLeaveBalancePage';
 import CommonDocumentsPage from './pages/CommonDocumentsPage';
+import DepartmentListPage from './pages/DepartmentListPage';
+import DesignationListPage from './pages/DesignationListPage';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -188,6 +191,22 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/departments',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <DepartmentListPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/designations',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <DesignationListPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/remote',
         element: (
           <ProtectedRoute>
@@ -224,6 +243,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['Super Admin', 'HR Manager']}>
             <EmployeeLeaveBalancePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/my-leave-balance',
+        element: (
+          <ProtectedRoute allowedRoles={['Employee', 'Manager', 'HR Manager', 'Super Admin', 'Company Admin', 'C-Level Executive']}>
+            <MyLeaveBalancePage />
           </ProtectedRoute>
         ),
       },

@@ -87,18 +87,28 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
           <li className="dropdown">
             <div className="sidebar-link dropdown-toggle" onClick={() => toggleDropdown('admin')}>
               <Briefcase className="nav-icon" />
-              Admin Tools
+              HR Tools
             </div>
             {openDropdown === 'admin' && (
               <ul className="dropdown-menu">
-                <li>
+                {/* <li>
                   <Link to="/departments/create" className="dropdown-item" onClick={handleLinkClick}>
                     Create Department
                   </Link>
-                </li>
-                <li>
+                </li> */}
+                {/* <li>
                   <Link to="/designations/create" className="dropdown-item" onClick={handleLinkClick}>
                     Create Designation
+                  </Link>
+                </li> */}
+                <li>
+                  <Link to="/departments" className="dropdown-item" onClick={handleLinkClick}>
+                    Departments
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/designations" className="dropdown-item" onClick={handleLinkClick}>
+                    Designations
                   </Link>
                 </li>
               </ul>
@@ -144,15 +154,25 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
                       Leave History
                     </Link>
                   </li>
-                  <li>
-                    <Link to="/leave/balance" className="dropdown-item" onClick={handleLinkClick}>
-                      Leave Balance
-                    </Link>
-                  </li>
+                  {(user?.role === 'HR Manager') && (
+                    <li>
+                      <Link to="/leave/balance" className="dropdown-item" onClick={handleLinkClick}>
+                        All Employee Leave Balance
+                      </Link>
+                    </li>
+                  )}
                 </>
+              )}
+              {(user?.role === 'Employee' || user?.role === 'Manager' || user?.role === 'HR Manager' || user?.role === 'Super Admin' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && (
+                <li>
+                  <Link to="/my-leave-balance" className="dropdown-item" onClick={handleLinkClick}>
+                    My Leave Balance
+                  </Link>
+                </li>
               )}
             </ul>
           )}
+          
         </li>
         {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && (
           <li>
