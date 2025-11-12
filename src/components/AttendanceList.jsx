@@ -194,7 +194,7 @@ const AttendanceList = () => {
                     <td>{record.work_hours ? record.work_hours.toFixed(2) : '-'}</td>
                     <td>{record.status}</td>
                     <td>{record.lateBy}</td>
-                    <td>{record.overtimeHours.toFixed(2)}</td>
+                    <td>{record.overtimeHours}</td>
                   </tr>
                 ))}
               </tbody>
