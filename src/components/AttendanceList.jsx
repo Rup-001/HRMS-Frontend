@@ -80,8 +80,8 @@ const AttendanceList = () => {
       'Employee Name': record.fullName,
       'Device User ID': record.deviceUserId,
       'Date': record.date,
-      'Check In': record.check_in,
-      'Check Out': record.check_out,
+      'Check In': record.check_in ? new Date(record.check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-',
+      'Check Out': record.check_out ? new Date(record.check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-',
       'Work Hours': record.work_hours,
       'Status': record.status,
       'Late By (minutes)': record.lateBy,
@@ -189,8 +189,8 @@ const AttendanceList = () => {
                     <td>{record.fullName}</td>
                     <td>{record.deviceUserId}</td>
                     <td>{record.date}</td>
-                    <td>{record.check_in || '-'}</td>
-                    <td>{record.check_out || '-'}</td>
+                    <td>{record.check_in ? new Date(record.check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-'}</td>
+                    <td>{record.check_out ? new Date(record.check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-'}</td>
                     <td>{record.work_hours ? record.work_hours.toFixed(2) : '-'}</td>
                     <td>{record.status}</td>
                     <td>{record.lateBy}</td>
