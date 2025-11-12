@@ -111,6 +111,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
                     Designations
                   </Link>
                 </li>
+                <li>
+                  <Link to="/shifts" className="dropdown-item" onClick={handleLinkClick}>
+                    Shifts
+                  </Link>
+                </li>
               </ul>
             )}
           </li>

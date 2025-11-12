@@ -169,6 +169,7 @@ const EmployeeList = () => {
                   <th>Email</th>
                   <th>Company</th>
                   <th>Role</th>
+                  <th>Shift</th>
                   <th>Status</th>
                   <th>Invitation Status</th>
                   <th>Actions</th>
@@ -195,6 +196,7 @@ const EmployeeList = () => {
                     <td>{employee.email || '-'}</td>
                     <td>{getCompanyName(employee.companyId)}</td>
                     <td>{employee.role || '-'}</td>
+                    <td>{employee.shift?.name || '-'}</td>
                     <td>{employee.employeeStatus || '-'}</td>
                     <td>{employee.invitationStatus || '-'}</td>
                     <td>
@@ -258,7 +260,7 @@ const EmployeeList = () => {
                   </div>
                   <div className="modal-details">
                     {Object.keys(selectedEmployee).map((key) => {
-                      if (['__v', 'createdAt', 'updatedAt'].includes(key)) return null;
+                      if (['__v', 'createdAt', 'updatedAt', 'shiftId'].includes(key)) return null; // Exclude shiftId as we'll display shift object
                       let displayValue = selectedEmployee[key];
                       if (displayValue === null || displayValue === undefined || displayValue === '') displayValue = '-';
                       else if (typeof displayValue === 'boolean') displayValue = displayValue ? 'Yes' : 'No';
@@ -269,7 +271,13 @@ const EmployeeList = () => {
                       } else if (key === 'managerId') {
                         const manager = employees.find(emp => emp._id === displayValue);
                         displayValue = manager ? `${manager.fullName} (${manager.newEmployeeCode})` : '-';
-                      } else if (typeof displayValue === 'object') return null;
+                      } else if (key === 'shift' && displayValue && displayValue.name) {
+                        return (
+                          <div key={key} className="modal-detail-item">
+                            <strong>Shift:</strong> <span>{displayValue.name} ({displayValue.startTime} - {displayValue.endTime})</span>
+                          </div>
+                        );
+                      } else if (typeof displayValue === 'object') return null; // Still filter out other objects
                       const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
                       return (
                         <div key={key} className="modal-detail-item">

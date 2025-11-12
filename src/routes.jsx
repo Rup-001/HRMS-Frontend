@@ -27,6 +27,7 @@ import MyLeaveBalancePage from './pages/MyLeaveBalancePage';
 import CommonDocumentsPage from './pages/CommonDocumentsPage';
 import DepartmentListPage from './pages/DepartmentListPage';
 import DesignationListPage from './pages/DesignationListPage';
+import ShiftManagement from './pages/ShiftManagement';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -262,8 +263,16 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: '/shifts',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <ShiftManagement />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 ]);
 
-export default router;
+export { router };

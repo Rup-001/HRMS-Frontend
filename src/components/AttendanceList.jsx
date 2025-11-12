@@ -34,9 +34,12 @@ const AttendanceList = () => {
         };
 
         const data = await getEmployeeAttendance(params.startDate, params.endDate, params.employeeId, token);
+        console.log('Attendance data:', data.data);
         if (data.success) {
           setAttendanceData(data.data);
-          setEmployees(data.data);
+          // Assuming the employee list for the dropdown is populated from the attendance data itself
+          const uniqueEmployees = [...new Map(data.data.map(item => [item.employeeId, { employeeId: item.employeeId, fullName: item.fullName }])).values()];
+          setEmployees(uniqueEmployees);
         } else {
           setError('Failed to fetch attendance');
         }
@@ -73,17 +76,17 @@ const AttendanceList = () => {
   };
 
   const exportToExcel = () => {
-    const exportData = attendanceData.flatMap(employee =>
-      employee.attendance.map(record => ({
-        'Employee Name': employee.fullName,
-        'Device User ID': employee.deviceUserId,
-        'Date': record.date,
-        'Check In': record.check_in,
-        'Check Out': record.check_out,
-        'Work Hours': record.work_hours,
-        'Status': record.status,
-      }))
-    );
+    const exportData = attendanceData.map(record => ({
+      'Employee Name': record.fullName,
+      'Device User ID': record.deviceUserId,
+      'Date': record.date,
+      'Check In': record.check_in,
+      'Check Out': record.check_out,
+      'Work Hours': record.work_hours,
+      'Status': record.status,
+      'Late By (minutes)': record.lateBy,
+      'Overtime (hours)': record.overtimeHours,
+    }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
@@ -92,18 +95,10 @@ const AttendanceList = () => {
   };
 
   // Pagination logic
-  const flatAttendance = attendanceData.flatMap(employee =>
-    employee.attendance.map(record => ({
-      ...record,
-      employeeId: employee.employeeId,
-      fullName: employee.fullName,
-      deviceUserId: employee.deviceUserId,
-    }))
-  );
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = flatAttendance.slice(indexOfFirstRecord, indexOfLastRecord);
-  const totalPages = Math.ceil(flatAttendance.length / recordsPerPage);
+  const currentRecords = attendanceData.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(attendanceData.length / recordsPerPage);
 
   const handlePrevious = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -169,7 +164,7 @@ const AttendanceList = () => {
           </button>
         </div>
       </div>
-      {flatAttendance.length === 0 ? (
+      {attendanceData.length === 0 ? (
         <div className="employee-message">No attendance records available.</div>
       ) : (
         <>
@@ -184,7 +179,8 @@ const AttendanceList = () => {
                   <th>Check Out</th>
                   <th>Work Hours</th>
                   <th>Status</th>
-                  <th>Leave Type</th>
+                  <th>Late By (minutes)</th>
+                  <th>Overtime (hours)</th>
                 </tr>
               </thead>
               <tbody>
@@ -195,15 +191,16 @@ const AttendanceList = () => {
                     <td>{record.date}</td>
                     <td>{record.check_in || '-'}</td>
                     <td>{record.check_out || '-'}</td>
-                    <td>{record.work_hours.toFixed(2)}</td>
+                    <td>{record.work_hours ? record.work_hours.toFixed(2) : '-'}</td>
                     <td>{record.status}</td>
-                    <td>{record.leave_type || '-'}</td>
+                    <td>{record.lateBy}</td>
+                    <td>{record.overtimeHours.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {flatAttendance.length > recordsPerPage && (
+          {attendanceData.length > recordsPerPage && (
             <div className="pagination-controls">
               <button
                 onClick={handlePrevious}

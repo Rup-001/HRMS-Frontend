@@ -7,6 +7,7 @@ import { getCompanies } from '../api/company';
 import { getEmployees as getAllEmployees } from '../api/employee';
 import { getDepartmentsByCompany } from '../api/department';
 import { getDesignationsByDepartment } from '../api/designation';
+import { getAllShifts } from '../api/shift'; // <-- Import getAllShifts
 import { User, Briefcase, Home, CheckSquare, FileText } from 'lucide-react';
 import '../styles/EmployeeCreate.css'; // ← Reuse same CSS
 
@@ -25,6 +26,7 @@ const EmployeeUpdate = () => {
     joiningDate: '',
     department: '',
     designation: '',
+    shiftId: '', // <-- Add shiftId here
     email: '',
     createUser: false,
     createDeviceUser: false,
@@ -57,6 +59,7 @@ const EmployeeUpdate = () => {
   const [companies, setCompanies] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
+  const [shifts, setShifts] = useState([]); // <-- Add shifts state
   const [employeesList, setEmployeesList] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -81,13 +84,9 @@ const EmployeeUpdate = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const [employeeData, companyData, empData] = await Promise.all([
-          getEmployeeProfile(id, token),
-          getCompanies(token),
-          getAllEmployees(token),
-        ]);
 
-        if (employeeData.success && companyData.success && empData.success) {
+        const employeeData = await getEmployeeProfile(id, token);
+        if (employeeData.success) {
           const emp = employeeData.data;
           setFormData({
             companyId: emp.companyId?._id || emp.companyId || '',
@@ -97,6 +96,7 @@ const EmployeeUpdate = () => {
             joiningDate: emp.joiningDate ? new Date(emp.joiningDate).toISOString().split('T')[0] : '',
             department: emp.department?._id || emp.department || '',
             designation: emp.designation?._id || emp.designation || '',
+            shiftId: emp.shiftId?._id || emp.shiftId || '', // <-- Set shiftId
             email: emp.email || '',
             createUser: false,
             createDeviceUser: false,
@@ -129,11 +129,25 @@ const EmployeeUpdate = () => {
           setPreviewImage(emp.passportSizePhoto ? `${import.meta.env.VITE_API_URL}${emp.passportSizePhoto}` : null);
           setHasUserAccount(emp.hasUserAccount || false);
           setHasDeviceUser(!!emp.deviceUserId);
-          setCompanies(companyData.data);
-          setEmployeesList(empData.data);
         } else {
-          setError('Failed to fetch data');
+          setError('Failed to fetch employee data');
         }
+
+        const companyData = await getCompanies(token);
+        if (companyData.success) {
+          setCompanies(companyData.data);
+        }
+
+        const empData = await getAllEmployees(token);
+        if (empData.success) {
+          setEmployeesList(empData.data);
+        }
+
+        const shiftData = await getAllShifts();
+        if (shiftData.data.success) {
+          setShifts(shiftData.data.data);
+        }
+
       } catch (err) {
         setError(err.error || 'Something went wrong');
       } finally {
@@ -358,6 +372,18 @@ const EmployeeUpdate = () => {
                 <select name="designation" value={formData.designation} onChange={handleChange} required>
                   <option value="">Select</option>
                   {designations.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Shift</label>
+                <select name="shiftId" value={formData.shiftId} onChange={handleChange} disabled={!formData.companyId}>
+                  <option value="">{formData.companyId ? 'Select Shift' : 'Select Company First'}</option>
+                  {shifts
+                    .filter(s => s.companyId._id === formData.companyId)
+                    .map(s => (
+                      <option key={s._id} value={s._id}>{s.name}</option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">
