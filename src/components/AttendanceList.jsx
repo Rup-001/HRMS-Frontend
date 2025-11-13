@@ -502,7 +502,8 @@ endDate">End Date</label>
                         ? new Date(record.check_in).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
-                            second: '2-digit',
+                            // second: '2-digit',
+                            hour12: false
                           })
                         : '-'}
                     </td>
@@ -511,7 +512,8 @@ endDate">End Date</label>
                         ? new Date(record.check_out).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
-                            second: '2-digit',
+                            // second: '2-digit',
+                            hour12: false
                           })
                         : '-'}
                     </td>
