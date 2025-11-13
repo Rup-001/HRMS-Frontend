@@ -201,7 +201,7 @@ const ShiftForm = ({ shift, onClose, onSave }) => {
         startTime: shift.startTime || '',
         endTime: shift.endTime || '',
         gracePeriod: shift.gracePeriod || '',
-        overtimeThreshold: shift.overtimeThreshold ? (shift.overtimeThreshold * 60) : '', // Convert hours → minutes
+        overtimeThreshold: shift.overtimeThreshold || '', // It's already in minutes
         companyId: shift.companyId?._id || shift.companyId || '',
       });
     } else {
@@ -265,7 +265,7 @@ const ShiftForm = ({ shift, onClose, onSave }) => {
     const dataToSave = {
       ...formData,
       gracePeriod: graceMins,
-      overtimeThreshold: otMins / 60, // Convert minutes → hours for backend
+      overtimeThreshold: otMins, // Send as minutes to backend
     };
 
     onSave(dataToSave);
