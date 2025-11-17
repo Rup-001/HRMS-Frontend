@@ -44,16 +44,6 @@ const LeaveList = () => {
   useEffect(() => {
     let filtered = leaveRequests;
 
-    if (user?.role === 'Manager') {
-      filtered = leaveRequests.filter(request =>
-        request.employeeId?._id === user.employeeId || request.approverId === user.employeeId
-      );
-    } else if (user?.role !== 'HR Manager') {
-      filtered = leaveRequests.filter(request =>
-        request.employeeId?._id === user.employeeId
-      );
-    }
-
     if (searchQuery) {
       filtered = filtered.filter(request =>
         (request.employeeId?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -186,13 +176,11 @@ const LeaveList = () => {
               className="employee-input"
               required
             >
-              <option value="sick">Sick</option>
               <option value="casual">Casual</option>
+              <option value="sick">Sick</option>
               <option value="annual">Annual</option>
               <option value="maternity">Maternity</option>
-              <option value="paternity">Paternity</option>
-              <option value="bereavement">Bereavement</option>
-              {/* <option value="remote">Remote</option> */}
+              <option value="festive">Festive</option>
             </select>
           </div>
           <div className="form-group">
@@ -249,7 +237,7 @@ const LeaveList = () => {
               <tbody>
                 {currentRequests.map((request) => {
                   const canApproveDeny = (
-                    (user?.role === 'Manager' && request.status === 'pending' && request.approverId === user.employeeId) ||
+                    (user?.role === 'Manager' && request.status === 'pending') ||
                     ((user?.role === 'HR Manager' || user?.role === 'Super Admin' || user?.role === 'Company Admin' || user?.role === 'C-Level Executive') && request.status === 'pending')
                   );
                   return (

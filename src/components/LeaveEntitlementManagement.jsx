@@ -13,10 +13,8 @@ const LeaveEntitlementManagement = () => {
   const [formData, setFormData] = useState({
     casual: 0,
     sick: 0,
-    earned: 0,
+    annual: 0,
     maternity: 0,
-    paternity: 0,
-    bereavement: 0,
     festive: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -66,10 +64,8 @@ const LeaveEntitlementManagement = () => {
       setFormData({
         casual: 0,
         sick: 0,
-        earned: 0,
+        annual: 0,
         maternity: 0,
-        paternity: 0,
-        bereavement: 0,
         festive: 0,
       });
       console.log('LeaveEntitlementManagement: selectedEmployeeId or year is empty, resetting entitlement.');
@@ -89,10 +85,8 @@ const LeaveEntitlementManagement = () => {
         setFormData({
           casual: data.data.casual,
           sick: data.data.sick,
-          earned: data.data.earned,
+          annual: data.data.annual,
           maternity: data.data.maternity,
-          paternity: data.data.paternity,
-          bereavement: data.data.bereavement,
           festive: data.data.festive,
         });
       } else {

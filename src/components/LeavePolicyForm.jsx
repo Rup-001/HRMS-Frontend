@@ -8,10 +8,8 @@ const LeavePolicyForm = () => {
   const [policy, setPolicy] = useState({
     casual: 0,
     sick: 0,
-    earned: 0,
+    annual: 0,
     maternity: 0,
-    paternity: 0,
-    bereavement: 0,
     festive: 0,
   });
   const [loading, setLoading] = useState(true);

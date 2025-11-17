@@ -22,6 +22,7 @@ import RemoteList from './components/RemoteList';
 import ProfilePage from './pages/ProfilePage';
 import DocumentListPage from './pages/DocumentListPage';
 import AllLeaveHistoryPage from './pages/AllLeaveHistoryPage';
+import AllLeaveRequestsPage from './pages/AllLeaveRequestsPage';
 import EmployeeLeaveBalancePage from './pages/EmployeeLeaveBalancePage';
 import MyLeaveBalancePage from './pages/MyLeaveBalancePage';
 import CommonDocumentsPage from './pages/CommonDocumentsPage';
@@ -236,6 +237,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['Super Admin', 'HR Manager']}>
             <AllLeaveHistoryPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/leave/all',
+        element: (
+          <ProtectedRoute allowedRoles={['HR Manager']}>
+            <AllLeaveRequestsPage />
           </ProtectedRoute>
         ),
       },

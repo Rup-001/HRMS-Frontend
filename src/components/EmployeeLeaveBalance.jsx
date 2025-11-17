@@ -75,7 +75,7 @@ const EmployeeLeaveBalance = () => {
   if (loading) return <div className="employee-message">Loading...</div>;
   if (error) return <div className="employee-message employee-error">Error: {error}</div>;
 
-  const leaveTypes = ['casual', 'sick', 'earned', 'maternity', 'paternity', 'bereavement', 'festive'];
+  const leaveTypes = ['casual', 'sick', 'annual', 'maternity', 'festive'];
 
   return (
     <div className="leave-container">

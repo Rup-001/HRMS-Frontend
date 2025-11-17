@@ -137,6 +137,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
                   Remote Requests
                 </Link>
               </li>
+              {/* {user?.role === 'HR Manager' && (
+                <li>
+                  <Link to="/leave/all" className="dropdown-item" onClick={handleLinkClick}>
+                    All Requests
+                  </Link>
+                </li>
+              )} */}
               {/* <li>
                 <Link to="/leave/summary" className="dropdown-item" onClick={handleLinkClick}>
                   Leave Summary

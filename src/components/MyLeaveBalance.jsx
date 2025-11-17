@@ -49,7 +49,7 @@ const MyLeaveBalance = () => {
     return <div className="employee-message">No leave summary data available.</div>;
   }
 
-  const leaveTypes = ['casual', 'sick', 'earned', 'maternity', 'paternity', 'bereavement', 'festive'];
+  const leaveTypes = ['casual', 'sick', 'annual', 'maternity', 'festive'];
 
   return (
     <div className="employee-container">
