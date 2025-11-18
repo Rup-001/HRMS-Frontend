@@ -13,6 +13,7 @@ const RemoteList = () => {
     endDate: '',
     type: 'remote',
     isHalfDay: false,
+    remarks: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -176,6 +177,17 @@ const RemoteList = () => {
               onChange={handleChange}
               className="employee-checkbox"
             />
+          </div>
+          <div className="form-group full-span">
+            <label htmlFor="remarks">Remarks</label>
+            <textarea
+              id="remarks"
+              name="remarks"
+              value={formData.remarks}
+              onChange={handleChange}
+              className="employee-input"
+              rows="3"
+            ></textarea>
           </div>
         </div>
         {error && <p className="employee-message employee-error">{error}</p>}

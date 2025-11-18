@@ -44,6 +44,9 @@ const EmployeeCreate = () => {
     motherName: '',
     employeeStatus: 'active',
     separationType: '',
+    separationReason: '',
+    separationRemarks: '',
+    idCardReturned: false,
     managerId: '',
     passportSizePhoto: null,
     appointmentLetter: null,
@@ -493,9 +496,26 @@ const EmployeeCreate = () => {
                 <label>Last Working Day</label>
                 <input type="date" name="lastWorkingDay" value={formData.lastWorkingDay} onChange={handleChange} />
               </div>
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label>Separation Type</label>
                 <input type="text" name="separationType" value={formData.separationType} onChange={handleChange} />
+              </div> */}
+              <div className="form-group">
+                <label>Separation Reason</label>
+                <select name="separationReason" value={formData.separationReason} onChange={handleChange}>
+                  <option value="">Select Reason</option>
+                  <option value="resigned">Resigned</option>
+                  <option value="terminated">Terminated</option>
+                  <option value="layoff">Layoff</option>
+                </select>
+              </div>
+              <div className="form-group full-span">
+                <label>Separation Remarks</label>
+                <textarea name="separationRemarks" value={formData.separationRemarks} onChange={handleChange} rows="3"></textarea>
+              </div>
+              <div className="form-group">
+                <label>ID Card Returned</label>
+                <input type="checkbox" name="idCardReturned" checked={formData.idCardReturned} onChange={handleChange} />
               </div>
               {formData.hasIdCard && (
                 <div className="form-group full-span">

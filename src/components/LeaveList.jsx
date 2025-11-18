@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { createLeaveRequest, getLeaveRequests, approveLeaveRequest, denyLeaveRequest } from '../api/leave';
+import { createLeaveRequest, getLeaveRequests, approveLeaveRequest, denyLeaveRequest, getLeaveSummary } from '../api/leave';
 import '../styles/Leave.css';
 
 const LeaveList = () => {
@@ -13,7 +13,9 @@ const LeaveList = () => {
     endDate: '',
     type: 'sick',
     isHalfDay: false,
+    remarks: '',
   });
+  const [leaveSummary, setLeaveSummary] = useState(null); // New state for leave summary
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,27 @@ const LeaveList = () => {
 
   useEffect(() => {
     fetchLeaveRequests();
-  }, []);
+    fetchMyLeaveSummary(); // Fetch leave summary
+  }, [user]);
+
+  const fetchMyLeaveSummary = async () => {
+    if (!user || !user.employeeId) {
+      setError('User not logged in or user ID not available.');
+      return;
+    }
+    const currentYear = new Date().getFullYear();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await getLeaveSummary(user.employeeId, currentYear, token);
+      if (response.success) {
+        setLeaveSummary(response.data);
+      } else {
+        setError(response.error || 'Failed to fetch leave summary.');
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred while fetching leave summary.');
+    }
+  };
 
   const fetchLeaveRequests = async () => {
     try {
@@ -176,11 +198,11 @@ const LeaveList = () => {
               className="employee-input"
               required
             >
-              <option value="casual">Casual</option>
-              <option value="sick">Sick</option>
-              <option value="annual">Annual</option>
-              <option value="maternity">Maternity</option>
-              <option value="festive">Festive</option>
+              <option value="casual">Casual ({leaveSummary?.balance?.casual || 0} days)</option>
+              <option value="sick">Sick ({leaveSummary?.balance?.sick || 0} days)</option>
+              <option value="annual">Annual ({leaveSummary?.balance?.annual || 0} days)</option>
+              <option value="maternity">Maternity ({leaveSummary?.balance?.maternity || 0} days)</option>
+              <option value="festive">Festive ({leaveSummary?.balance?.festive || 0} days)</option>
             </select>
           </div>
           <div className="form-group">
@@ -193,6 +215,17 @@ const LeaveList = () => {
               onChange={handleChange}
               className="employee-checkbox"
             />
+          </div>
+          <div className="form-group full-span">
+            <label htmlFor="remarks">Remarks</label>
+            <textarea
+              id="remarks"
+              name="remarks"
+              value={formData.remarks}
+              onChange={handleChange}
+              className="employee-input"
+              rows="3"
+            ></textarea>
           </div>
         </div>
         {error && <p className="employee-message employee-error">{error}</p>}

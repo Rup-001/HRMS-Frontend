@@ -95,7 +95,8 @@ const ShiftManagement = () => {
                 <td className="list-table-td text-center">{shift.workingHours}</td>
                 <td className="list-table-td text-center">{shift.gracePeriod}</td>
                 <td className="list-table-td text-center">{shift.overtimeThreshold}</td>
-                {user?.role === 'Super Admin' && (
+                {/* {user?.role === 'Super Admin' && ( */}
+                {(user?.role === 'Super Admin' || user?.role === 'HR Manager') && (
                   <td className="list-table-td text-center">
                     <button
                       onClick={() => handleEdit(shift)}
