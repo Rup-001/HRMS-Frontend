@@ -16,8 +16,8 @@ const LeavePolicyForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const isAuthorized = ['HR Manager'].includes(user?.role);
-
+  // const isAuthorized = ['HR Manager'||'Super Admin'].includes(user?.role);
+const isAuthorized = ['HR Manager', 'Super Admin', 'Company Admin', 'C-Level Executive'].includes(user?.role);
   useEffect(() => {
     if (!isAuthorized) return;
     fetchPolicy();

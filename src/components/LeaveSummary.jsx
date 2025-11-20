@@ -21,7 +21,7 @@ const LeaveSummary = () => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const data = await getLeaveSummary(year, token);
+      const data = await getLeaveSummary(null, year, token);
       if (data.success) {
         setSummary(data.data);
       } else {

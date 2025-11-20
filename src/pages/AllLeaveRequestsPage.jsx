@@ -136,6 +136,7 @@ const AllLeaveRequestsPage = () => {
                   <th>Employee Code</th>
                   <th>Start Date</th>
                   <th>End Date</th>
+                  <th>Day Count</th>
                   <th>Type</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -150,6 +151,7 @@ const AllLeaveRequestsPage = () => {
                       <td>{request.employeeId?.newEmployeeCode || '-'}</td>
                       <td>{new Date(request.startDate).toLocaleDateString()}</td>
                       <td>{new Date(request.endDate).toLocaleDateString()}</td>
+                      <td>{request.isHalfDay ? 0.5 : ((new Date(request.endDate) - new Date(request.startDate)) / (1000 * 60 * 60 * 24)) + 1}</td>
                       <td>{request.type.charAt(0).toUpperCase() + request.type.slice(1)} {request.isHalfDay ? '(Half Day)' : ''}</td>
                       <td>{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</td>
                       <td>

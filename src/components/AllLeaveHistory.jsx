@@ -26,12 +26,12 @@ const AllLeaveHistory = () => {
       }
     };
 
-    if (user?.role === 'HR Manager') {
+    if (user?.role === 'HR Manager'||'Super Admin') {
       fetchLeaveHistory();
     }
   }, [user]);
 
-  if (user?.role !== 'HR Manager') {
+  if (user?.role !== 'HR Manager'&'Super Admin') {
     return <div className="employee-message">Access Denied</div>;
   }
 
@@ -51,6 +51,7 @@ const AllLeaveHistory = () => {
                 <th>Employee</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Day Count</th>
                 <th>Type</th>
                 <th>Status</th>
                 <th>Approver</th>
@@ -62,6 +63,7 @@ const AllLeaveHistory = () => {
                   <td>{request.employeeId?.fullName || '-'}</td>
                   <td>{new Date(request.startDate).toLocaleDateString()}</td>
                   <td>{new Date(request.endDate).toLocaleDateString()}</td>
+                  <td>{((new Date(request.endDate) - new Date(request.startDate)) / (1000 * 60 * 60 * 24)) + 1}</td>
                   <td>{request.type}</td>
                   <td>{request.status}</td>
                   <td>{request.approverId?.fullName || '-'}</td>

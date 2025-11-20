@@ -170,8 +170,9 @@ const EmployeeList = () => {
                   <th>Company</th>
                   <th>Role</th>
                   <th>Shift</th>
+                  <th>Department</th>
+                  <th>Designation</th>
                   <th>Status</th>
-                  <th>Invitation Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -197,8 +198,9 @@ const EmployeeList = () => {
                     <td>{getCompanyName(employee.companyId)}</td>
                     <td>{employee.role || '-'}</td>
                     <td>{employee.shift?.name || '-'}</td>
+                    <td>{employee.assignedDepartment || '-'}</td>
+                    <td>{employee.designation?.name || '-'}</td>
                     <td>{employee.employeeStatus || '-'}</td>
-                    <td>{employee.invitationStatus || '-'}</td>
                     <td>
                       <button
                         onClick={() => handleView(employee._id)}
