@@ -36,7 +36,10 @@ import { Navigate } from 'react-router-dom';
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useContext(AuthContext);
   if (loading) return <div>Loading...</div>;
-  if (!user && allowedRoles) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/login" />;
+  if (user.role === 'Super Admin') {
+    return children;
+  }
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard" />;
   }

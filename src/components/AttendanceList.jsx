@@ -599,11 +599,11 @@ const AttendanceList = () => {
     "HR Manager",
   ];
 
-  const formatUTCTime = (isoString) => {
+  const formatLocalTime = (isoString) => {
     if (!isoString) return "-";
     const d = new Date(isoString);
-    return `${String(d.getUTCHours()).padStart(2, "0")}:${String(
-      d.getUTCMinutes()
+    return `${String(d.getHours()).padStart(2, "0")}:${String(
+      d.getMinutes()
     ).padStart(2, "0")}`;
   };
 
@@ -631,13 +631,18 @@ const AttendanceList = () => {
       }
     };
 
-    if (allowedRoles.includes(user.role)) fetchEmployees();
-  }, [user.role]);
+    if (user && allowedRoles.includes(user.role)) fetchEmployees();
+  }, [user]);
 
   /** ---------------- FETCH ATTENDANCE ---------------- */
   const fetchAttendance = async () => {
     setLoading(true);
     setError("");
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -773,7 +778,7 @@ const AttendanceList = () => {
           />
         </div>
 
-        {allowedRoles.includes(user.role) && (
+        {user && allowedRoles.includes(user.role) && (
           <>
             <div className="form-group">
               <label>Employee</label>
@@ -834,12 +839,12 @@ const AttendanceList = () => {
                 <td>{record.date}</td>
                 <td>
                   {record.check_in
-                    ? formatUTCTime(record.check_in)
+                    ? formatLocalTime(record.check_in)
                     : "-"}
                 </td>
                 <td>
                   {record.check_out
-                    ? formatUTCTime(record.check_out)
+                    ? formatLocalTime(record.check_out)
                     : "-"}
                 </td>
                 <td>

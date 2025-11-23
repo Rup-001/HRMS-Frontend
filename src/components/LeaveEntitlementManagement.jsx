@@ -21,7 +21,7 @@ const LeaveEntitlementManagement = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const isHRorAdmin = ['HR Manager'].includes(user?.role);
+  const isHRorAdmin = ['HR Manager', 'Super Admin', 'Company Admin'].includes(user?.role);
 
   useEffect(() => {
     const fetchEmployeesData = async () => {
