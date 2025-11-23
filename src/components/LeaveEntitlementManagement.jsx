@@ -144,7 +144,14 @@ const LeaveEntitlementManagement = () => {
       const data = await generateMissingLeaveEntitlements(token);
       if (data.success) {
         setSuccess(data.message || 'Missing entitlements generated successfully!');
-        fetchEntitlement(selectedEmployeeId, year); // Refresh list after generation
+        // Refetch employees and then fetch the entitlement for the first employee
+        const employeesData = await getEmployees(token);
+        if (employeesData.success && employeesData.data.length > 0) {
+          setEmployees(employeesData.data);
+          const firstEmployeeId = employeesData.data[0]._id;
+          setSelectedEmployeeId(firstEmployeeId);
+          fetchEntitlement(firstEmployeeId, year);
+        }
       } else {
         setError(data.error || 'Failed to generate missing entitlements.');
       }
