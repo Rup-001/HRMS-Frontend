@@ -29,6 +29,7 @@ import CommonDocumentsPage from './pages/CommonDocumentsPage';
 import DepartmentListPage from './pages/DepartmentListPage';
 import DesignationListPage from './pages/DesignationListPage';
 import ShiftManagement from './pages/ShiftManagement';
+import HolidayPage from './pages/HolidayPage';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -280,6 +281,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
             <ShiftManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/holidays',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'HR Manager']}>
+            <HolidayPage />
           </ProtectedRoute>
         ),
       },

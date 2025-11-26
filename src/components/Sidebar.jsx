@@ -116,6 +116,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
                     Shifts
                   </Link>
                 </li>
+                {(user?.role === 'Super Admin' || user?.role === 'HR Manager') && (
+                  <li>
+                    <Link to="/holidays" className="dropdown-item" onClick={handleLinkClick}>
+                      Holiday Calendar
+                    </Link>
+                  </li>
+                )}
               </ul>
             )}
           </li>

@@ -209,3 +209,43 @@
 .review-actions button {
   width: 100%;
 }
+/* Status Badge Styles */
+.status-badge {
+  padding: 0.3em 0.6em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.status-present {
+  background-color: #28a745; /* Green */
+}
+
+.status-absent {
+  background-color: #dc3545; /* Red */
+}
+
+.status-holiday {
+  background-color: #007bff; /* Blue */
+}
+
+.status-leave {
+  background-color: #ffc107; /* Yellow */
+  color: #212529;
+}
+
+.status-incomplete {
+  background-color: #fd7e14; /* Orange */
+}
+
+.status-weekend {
+  background-color: #6c757d; /* Gray */
+}
+
+.status-remote {
+    background-color: #17a2b8; /* Cyan */
+}

@@ -545,6 +545,27 @@ const AttendanceList = () => {
   const recordsPerPage = 10;
   const allowedRoles = ["Super Admin", "C-Level Executive", "Company Admin", "HR Manager"];
 
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'Present':
+        return 'status-present';
+      case 'Absent':
+        return 'status-absent';
+      case 'Holiday':
+        return 'status-holiday';
+      case 'Leave':
+        return 'status-leave';
+      case 'Incomplete':
+        return 'status-incomplete';
+      case 'Weekend':
+        return 'status-weekend';
+      case 'Remote':
+        return 'status-remote';
+      default:
+        return '';
+    }
+  };
+
   // Show only in minutes (e.g., 98 minutes)
   const formatToMinutesOnly = (value, unit = "minutes") => {
     if (!value || value <= 0) return "0 minutes";
@@ -751,7 +772,11 @@ const AttendanceList = () => {
                   <td>{extractOriginalTime(record.check_in)}</td>
                   <td>{extractOriginalTime(record.check_out)}</td>
                   <td>{record.work_hours ? record.work_hours.toFixed(2) : "0.00"}</td>
-                  <td>{record.status}</td>
+                  <td>
+                    <span className={`status-badge ${getStatusClass(record.status)}`}>
+                      {record.status}
+                    </span>
+                  </td>
                   <td>{formatToMinutesOnly(record.lateBy, "minutes")}</td>
                   <td>{formatToMinutesOnly(record.overtimeHours, "hours")}</td>
                 </tr>
@@ -783,5 +808,6 @@ const AttendanceList = () => {
     </div>
   );
 };
+
 
 export default AttendanceList;
