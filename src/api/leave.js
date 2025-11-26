@@ -30,10 +30,11 @@ export const denyLeaveRequest = async (id, token) => {
   return response.data;
 };
 
-export const getLeavePolicy = async (token) => {
+export const getLeavePolicy = async (token, companyId, year) => {
   try {
     const response = await axios.get(`${API_URL}/api/leave/policy`, {
       headers: { Authorization: `Bearer ${token}` },
+      params: { companyId, year }, // Pass companyId and year as query parameters
     });
     return response.data;
   } catch (error) {
@@ -41,9 +42,9 @@ export const getLeavePolicy = async (token) => {
   }
 };
 
-export const updateLeavePolicy = async (policyData, token) => {
+export const updateLeavePolicy = async (companyId, policyData, token) => {
   try {
-    const response = await axios.patch(`${API_URL}/api/leave/policy`, policyData, {
+    const response = await axios.patch(`${API_URL}/api/leave/policy/${companyId}`, policyData, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;

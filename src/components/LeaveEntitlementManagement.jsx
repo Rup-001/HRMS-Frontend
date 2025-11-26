@@ -9,6 +9,7 @@ const LeaveEntitlementManagement = () => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
+  const currentYear = new Date().getFullYear(); // Defined here
   const [entitlement, setEntitlement] = useState(null);
   const [formData, setFormData] = useState({
     casual: 0,
@@ -223,6 +224,23 @@ const LeaveEntitlementManagement = () => {
       {selectedEmployeeId && entitlement && (
         <form onSubmit={handleSubmit} className="leave-form">
           {Object.keys(formData).map(key => {
+            const selectedEmployee = employees.find(emp => emp._id === selectedEmployeeId);
+            const isMaleEmployee = selectedEmployee && selectedEmployee.gender === 'Male';
+            if (key === 'maternity' && isMaleEmployee) {
+              return (
+                <div className="form-group" key={key}>
+                  <label htmlFor={key}>Maternity Leave (days):</label>
+                  <input
+                    type="text"
+                    id={key}
+                    name={key}
+                    value="N/A"
+                    disabled
+                    className="employee-input"
+                  />
+                </div>
+              );
+            }
             return (
               <div className="form-group" key={key}>
                 <label htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)} Leave (days):</label>
