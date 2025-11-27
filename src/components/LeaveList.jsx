@@ -202,7 +202,7 @@ const LeaveList = () => {
               <option value="sick">Sick ({leaveSummary?.balance?.sick || 0} days)</option>
               <option value="annual">Annual ({leaveSummary?.balance?.annual || 0} days)</option>
               <option value="maternity">Maternity ({leaveSummary?.balance?.maternity || 0} days)</option>
-              <option value="festive">Festive ({leaveSummary?.balance?.festive || 0} days)</option>
+              {/* <option value="festive">Festive ({leaveSummary?.balance?.festive || 0} days)</option> */}
             </select>
           </div>
           <div className="form-group">

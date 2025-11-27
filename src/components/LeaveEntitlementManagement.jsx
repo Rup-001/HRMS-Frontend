@@ -16,7 +16,7 @@ const LeaveEntitlementManagement = () => {
     sick: 0,
     annual: 0,
     maternity: 0,
-    festive: 0,
+    //Festive: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -67,7 +67,7 @@ const LeaveEntitlementManagement = () => {
         sick: 0,
         annual: 0,
         maternity: 0,
-        festive: 0,
+        //Festive: 0,
       });
       console.log('LeaveEntitlementManagement: selectedEmployeeId or year is empty, resetting entitlement.');
     }
@@ -88,7 +88,7 @@ const LeaveEntitlementManagement = () => {
           sick: data.data.sick,
           annual: data.data.annual,
           maternity: data.data.maternity,
-          festive: data.data.festive,
+          //Festive: data.data.//Festive,
         });
       } else {
         setError(data.error || 'Failed to fetch leave entitlement.');

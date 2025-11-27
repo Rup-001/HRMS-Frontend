@@ -30,6 +30,7 @@ import DepartmentListPage from './pages/DepartmentListPage';
 import DesignationListPage from './pages/DesignationListPage';
 import ShiftManagement from './pages/ShiftManagement';
 import HolidayPage from './pages/HolidayPage';
+import ShiftTemplatePage from './pages/ShiftTemplatePage';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -281,6 +282,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
             <ShiftManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/shift-templates',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <ShiftTemplatePage />
           </ProtectedRoute>
         ),
       },

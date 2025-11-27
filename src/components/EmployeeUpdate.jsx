@@ -440,7 +440,7 @@ const EmployeeUpdate = () => {
                   <option value="">Select</option>
                   <option>Male</option>
                   <option>Female</option>
-                  <option>Other</option>
+                  {/* <option>Other</option> */}
                 </select>
               </div>
               <div className="form-group">

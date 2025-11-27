@@ -11,7 +11,7 @@ const LeavePolicyForm = () => {
     sick: 0,
     annual: 0,
     maternity: 0,
-    festive: 0,
+    //Festive: 0,
   });
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState(user?.companyId || '');
@@ -164,7 +164,7 @@ const LeavePolicyForm = () => {
       {(selectedCompanyId || !isSuperAdmin) && (
         <form onSubmit={handleSubmit} className="leave-form">
           {Object.keys(policy).map(key => {
-            if (['_id', 'companyId', 'createdAt', 'updatedAt', '__v', 'year'].includes(key)) return null;
+            if (['_id', 'companyId', 'createdAt', 'updatedAt', '__v', 'year', 'festive'].includes(key)) return null;
             return (
               <div className="form-group" key={key}>
                 <label htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)} Leave (days):</label>

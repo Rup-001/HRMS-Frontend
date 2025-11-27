@@ -71,7 +71,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
           <li>
             <Link to="/attendance/adjustments" className="sidebar-link" onClick={handleLinkClick}>
               <Calendar className="nav-icon" />
-              Adjustments
+              Manual Attendance
             </Link>
           </li>
         )}
@@ -116,6 +116,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
                     Shifts
                   </Link>
                 </li>
+                {/* <li>
+                  <Link to="/shift-templates" className="dropdown-item" onClick={handleLinkClick}>
+                    Shift Roster Templates
+                  </Link>
+                </li> */}
                 {(user?.role === 'Super Admin' || user?.role === 'HR Manager') && (
                   <li>
                     <Link to="/holidays" className="dropdown-item" onClick={handleLinkClick}>

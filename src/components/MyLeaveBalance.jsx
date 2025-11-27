@@ -300,7 +300,7 @@ const MyLeaveBalance = () => {
     { key: 'sick', label: 'Sick Leave' },
     { key: 'annual', label: 'Annual Leave' },
     { key: 'maternity', label: 'Maternity Leave' },
-    { key: 'festive', label: 'Festive Leave' },
+    // { key: 'festive', label: 'Festive Leave' },
   ];
 
   return (
