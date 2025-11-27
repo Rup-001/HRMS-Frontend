@@ -1,289 +1,3 @@
-// import { useState, useEffect, useContext } from "react";
-// import { AuthContext } from "../context/AuthContext";
-// import { getEmployeeAttendance } from "../api/attendance";
-// import { getEmployees } from "../api/employee";
-// import * as XLSX from "xlsx";
-// import "../styles/Attendance.css";
-
-// const AttendanceList = () => {
-//   const { user } = useContext(AuthContext);
-//   const [attendanceData, setAttendanceData] = useState([]);
-//   const [filteredData, setFilteredData] = useState([]);
-//   const [employees, setEmployees] = useState([]);
-//   const [selectedEmployee, setSelectedEmployee] = useState("");
-//   const [startDate, setStartDate] = useState("");
-//   const [endDate, setEndDate] = useState("");
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const [error, setError] = useState("");
-//   const [loading, setLoading] = useState(true);
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const recordsPerPage = 10;
-//   const allowedRoles = ["Super Admin", "C-Level Executive", "Company Admin", "HR Manager"];
-
-//   const getStatusClass = (status) => {
-//     switch (status) {
-//       case 'Present':
-//         return 'status-present';
-//       case 'Absent':
-//         return 'status-absent';
-//       case 'Holiday':
-//         return 'status-holiday';
-//       case 'Leave':
-//         return 'status-leave';
-//       case 'Incomplete':
-//         return 'status-incomplete';
-//       case 'Weekend':
-//         return 'status-weekend';
-//       case 'Remote':
-//         return 'status-remote';
-//       default:
-//         return '';
-//     }
-//   };
-
-//   // Show only in minutes (e.g., 98 minutes)
-//   const formatToMinutesOnly = (value, unit = "minutes") => {
-//     if (!value || value <= 0) return "0 minutes";
-
-//     const totalMinutes =
-//       unit === "minutes"
-//         ? Math.round(value)
-//         : Math.round(value * 60);
-
-//     const mins = Math.round(totalMinutes);
-//     return `${mins} minute${mins !== 1 ? "s" : ""}`;
-//   };
-
-//   // Extract original time (no timezone conversion)
-//   const extractOriginalTime = (ts) => {
-//     if (!ts) return "-";
-//     const match = ts.match(/(\d{2}:\d{2})/);
-//     return match ? match[1] : "-";
-//   };
-
-//   // Fetch Employees
-//   useEffect(() => {
-//     const fetchEmployees = async () => {
-//       try {
-//         const token = localStorage.getItem("token");
-//         const res = await getEmployees(token);
-//         if (res.success) setEmployees(res.data);
-//       } catch (err) {
-//         console.error("Error fetching employees", err);
-//       }
-//     };
-//     if (user && allowedRoles.includes(user.role)) fetchEmployees();
-//   }, [user]);
-
-//   // DEFAULT: Today only on first load → so current date appears at the top
-//   const getToday = () => {
-//     const d = new Date();
-//     return d.toISOString().split("T")[0]; // YYYY-MM-DD
-//   };
-
-//   // Use today as default start & end (instead of full month)
-//   const getDefaultStart = () => getToday();
-//   const getDefaultEnd = () => getToday();
-
-//   // Fetch Attendance + Sort by newest date first
-//   const fetchAttendance = async () => {
-//     setLoading(true);
-//     setError("");
-//     try {
-//       const token = localStorage.getItem("token");
-//       const finalStart = startDate || getDefaultStart();
-//       const finalEnd = endDate || getDefaultEnd();
-//       const employeeToFetch = allowedRoles.includes(user.role)
-//         ? selectedEmployee || null
-//         : user.employeeId;
-
-//       const data = await getEmployeeAttendance(finalStart, finalEnd, employeeToFetch, token);
-
-//       if (data.success) {
-//         const rawData = data.data || [];
-
-//         // NEWEST DATE FIRST (today will be at the top)
-//         const sortedData = rawData.sort((a, b) => {
-//           return new Date(b.date) - new Date(a.date);
-//         });
-
-//         setAttendanceData(sortedData);
-//         setFilteredData(sortedData);
-//       } else {
-//         setError("Could not load attendance.");
-//       }
-//     } catch (err) {
-//       console.error(err);
-//       setError("Error loading attendance");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchAttendance();
-//   }, []);
-
-//   // Search filter (resets page)
-//   useEffect(() => {
-//     const filtered = attendanceData.filter((rec) =>
-//       (rec.fullName || "").toLowerCase().includes(searchQuery.toLowerCase())
-//     );
-//     setFilteredData(filtered);
-//     setCurrentPage(1);
-//   }, [searchQuery, attendanceData]);
-
-//   const handleFilter = () => {
-//     setCurrentPage(1);
-//     fetchAttendance();
-//   };
-
-//   // Excel Export — minutes only
-//   const exportToExcel = () => {
-//     const exportData = filteredData.map((record) => ({
-//       "Employee Name": record.fullName,
-//       "Employee Code": record.employeeCode,
-//       Date: record.date,
-//       "Check In": extractOriginalTime(record.check_in),
-//       "Check Out": extractOriginalTime(record.check_out),
-//       "Work Hours": record.work_hours?.toFixed(2) || "0.00",
-//       Status: record.status,
-//       "Late By": formatToMinutesOnly(record.lateBy, "minutes"),
-//       "Overtime": formatToMinutesOnly(record.overtimeHours, "hours"),
-//     }));
-
-//     const ws = XLSX.utils.json_to_sheet(exportData);
-//     const wb = XLSX.utils.book_new();
-//     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-//     XLSX.writeFile(wb, `attendance_${startDate || "start"}_${endDate || "end"}.xlsx`);
-//   };
-
-//   // Pagination
-//   const indexOfLast = currentPage * recordsPerPage;
-//   const indexOfFirst = indexOfLast - recordsPerPage;
-//   const currentRecords = filteredData.slice(indexOfFirst, indexOfLast);
-//   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
-
-//   if (loading) return <div className="employee-message">Loading...</div>;
-//   if (error) return <div className="employee-message employee-error">{error}</div>;
-
-//   return (
-//     <div className="attendance-container">
-//       <h2 className="employee-title">Attendance</h2>
-
-//       <div className="attendance-filters">
-//         <div className="form-group">
-//           <label>Start Date</label>
-//           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-//         </div>
-//         <div className="form-group">
-//           <label>End Date</label>
-//           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-//         </div>
-
-//         {user && allowedRoles.includes(user.role) && (
-//           <>
-//             <div className="form-group">
-//               <label>Employee</label>
-//               <select value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
-//                 <option value="">All Employees</option>
-//                 {employees.map((emp) => (
-//                   <option key={emp._id} value={emp._id}>
-//                     {emp.fullName}
-//                   </option>
-//                 ))}
-//               </select>
-//             </div>
-//             <div className="form-group">
-//               <label>Search Name</label>
-//               <input
-//                 type="text"
-//                 value={searchQuery}
-//                 onChange={(e) => setSearchQuery(e.target.value)}
-//                 placeholder="Search by name..."
-//               />
-//             </div>
-//           </>
-//         )}
-
-//         <div className="filter-buttons">
-//           <button onClick={handleFilter} className="employee-button">Filter</button>
-//           <button onClick={exportToExcel} className="employee-button">Export to Excel</button>
-//         </div>
-//       </div>
-
-//       <div className="attendance-table-container">
-//         <table className="attendance-table">
-//           <thead>
-//             <tr>
-//               <th>Name</th>
-//               <th>Code</th>
-//               <th>Date</th>
-//               <th>In</th>
-//               <th>Out</th>
-//               <th>Hours</th>
-//               <th>Status</th>
-//               <th>Late By</th>
-//               <th>Overtime</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {currentRecords.length === 0 ? (
-//               <tr>
-//                 <td colSpan="9" style={{ textAlign: "center", padding: "20px" }}>
-//                   No attendance records found.
-//                 </td>
-//               </tr>
-//             ) : (
-//               currentRecords.map((record, idx) => (
-//                 <tr key={`${record.employeeId}-${record.date}-${idx}`}>
-//                   <td>{record.fullName}</td>
-//                   <td>{record.employeeCode}</td>
-//                   <td>{record.date}</td>
-//                   <td>{extractOriginalTime(record.check_in)}</td>
-//                   <td>{extractOriginalTime(record.check_out)}</td>
-//                   <td>{record.work_hours ? record.work_hours.toFixed(2) : "0.00"}</td>
-//                   <td>
-//                     <span className={`status-badge ${getStatusClass(record.status)}`}>
-//                       {record.status}
-//                     </span>
-//                   </td>
-//                   <td>{formatToMinutesOnly(record.lateBy, "minutes")}</td>
-//                   <td>{formatToMinutesOnly(record.overtimeHours, "hours")}</td>
-//                 </tr>
-//               ))
-//             )}
-//           </tbody>
-//         </table>
-//       </div>
-
-//       {filteredData.length > recordsPerPage && (
-//         <div className="pagination-controls">
-//           <button
-//             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-//             disabled={currentPage === 1}
-//             className="pagination-button"
-//           >
-//             Previous
-//           </button>
-//           <span>Page {currentPage} of {totalPages}</span>
-//           <button
-//             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-//             disabled={currentPage === totalPages}
-//             className="pagination-button"
-//           >
-//             Next
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default AttendanceList;
-
-
-// AttendanceList.jsx
 
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
@@ -304,34 +18,51 @@ const AttendanceList = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 15;
+  const recordsPerPage = 10;
   const allowedRoles = ["Super Admin", "C-Level Executive", "Company Admin", "HR Manager"];
 
   const getStatusClass = (status) => {
-    const map = {
-      Present: 'status-present',
-      Absent: 'status-absent',
-      Holiday: 'status-holiday',
-      Leave: 'status-leave',
-      Incomplete: 'status-incomplete',
-      Remote: 'status-remote',
-      Weekend: 'status-weekend'
-    };
-    return map[status] || '';
+    switch (status) {
+      case 'Present':
+        return 'status-present';
+      case 'Absent':
+        return 'status-absent';
+      case 'Holiday':
+        return 'status-holiday';
+      case 'Leave':
+        return 'status-leave';
+      case 'Incomplete':
+        return 'status-incomplete';
+      case 'Weekend':
+        return 'status-weekend';
+      case 'Remote':
+        return 'status-remote';
+      default:
+        return '';
+    }
   };
 
-  const formatTime = (timeStr) => (timeStr ? timeStr.slice(0, 5) : "-"); // 09:15
+  // Show only in minutes (e.g., 98 minutes)
+  const formatToMinutesOnly = (value, unit = "minutes") => {
+    if (!value || value <= 0) return "0 minutes";
 
-  const formatMinutes = (mins) => {
-    if (!mins || mins <= 0) return "0 min";
-    return `${Math.round(mins)} min`;
+    const totalMinutes =
+      unit === "minutes"
+        ? Math.round(value)
+        : Math.round(value * 60);
+
+    const mins = Math.round(totalMinutes);
+    return `${mins} minute${mins !== 1 ? "s" : ""}`;
   };
 
-  const formatOvertime = (hours) => {
-    if (!hours || hours <= 0) return "0 hr";
-    return `${Number(hours).toFixed(2)} hr`;
+  // Extract original time (no timezone conversion)
+  const extractOriginalTime = (ts) => {
+    if (!ts) return "-";
+    const match = ts.match(/(\d{2}:\d{2})/);
+    return match ? match[1] : "-";
   };
 
+  // Fetch Employees
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -339,47 +70,69 @@ const AttendanceList = () => {
         const res = await getEmployees(token);
         if (res.success) setEmployees(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching employees", err);
       }
     };
     if (user && allowedRoles.includes(user.role)) fetchEmployees();
   }, [user]);
 
-  const today = () => new Date().toISOString().split("T")[0];
+  // Date helpers
+  const getMonthStart = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+  };
 
-  const defaultStart = () => today();
-  const defaultEnd = () => today();
+  const getMonthEnd = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    const lastDay = new Date(y, m, 0).getDate();
+    return `${y}-${String(m).padStart(2, "0")}-${lastDay}`;
+  };
 
+  // Fetch Attendance + Sort by newest date first
   const fetchAttendance = async () => {
     setLoading(true);
     setError("");
     try {
       const token = localStorage.getItem("token");
-      const finalStart = startDate || defaultStart();
-      const finalEnd = endDate || defaultEnd();
-      const empId = allowedRoles.includes(user.role) ? (selectedEmployee || null) : user.employeeId;
+      const finalStart = startDate || getMonthStart();
+      const finalEnd = endDate || getMonthEnd();
+      const employeeToFetch = allowedRoles.includes(user.role)
+        ? selectedEmployee || null
+        : user.employeeId;
 
-      const res = await getEmployeeAttendance(finalStart, finalEnd, empId, token);
+      const data = await getEmployeeAttendance(finalStart, finalEnd, employeeToFetch, token);
 
-      if (res.success) {
-        const sorted = (res.data || []).sort((a, b) => b.date.localeCompare(a.date));
-        setAttendanceData(sorted);
-        setFilteredData(sorted);
+      if (data.success) {
+        const rawData = data.data || [];
+
+        // NEWEST DATE FIRST
+        const sortedData = rawData.sort((a, b) => {
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        setAttendanceData(sortedData);
+        setFilteredData(sortedData);
       } else {
-        setError("Failed to load attendance data.");
+        setError("Could not load attendance.");
       }
     } catch (err) {
-      setError("Network error. Please try again.");
+      console.error(err);
+      setError("Error loading attendance");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchAttendance(); }, []);
-
   useEffect(() => {
-    const filtered = attendanceData.filter(rec =>
-      rec.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+    fetchAttendance();
+  }, []);
+
+  // Search filter (resets page)
+  useEffect(() => {
+    const filtered = attendanceData.filter((rec) =>
+      (rec.fullName || "").toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredData(filtered);
     setCurrentPage(1);
@@ -390,76 +143,77 @@ const AttendanceList = () => {
     fetchAttendance();
   };
 
+  // Excel Export — minutes only
   const exportToExcel = () => {
-    const data = filteredData.map(r => ({
-      "Employee Name": r.fullName,
-      "Code": r.employeeCode,
-      "Date": r.date,
-      "In": formatTime(r.check_in),
-      "Out": formatTime(r.check_out),
-      "Hours": r.work_hours.toFixed(2),
-      "Status": r.status,
-      "Late By": formatMinutes(r.lateBy),
-      "Overtime": formatOvertime(r.overtimeHours),
+    const exportData = filteredData.map((record) => ({
+      "Employee Name": record.fullName,
+      "Employee Code": record.employeeCode,
+      Date: record.date,
+      "Check In": extractOriginalTime(record.check_in),
+      "Check Out": extractOriginalTime(record.check_out),
+      "Work Hours": record.work_hours?.toFixed(2) || "0.00",
+      Status: record.status,
+      "Late By": formatToMinutesOnly(record.lateBy, "minutes"),
+      "Overtime": formatToMinutesOnly(record.overtimeHours, "hours"),
     }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
+    const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, `Attendance_${startDate || 'start'}_${endDate || 'end'}.xlsx`);
+    XLSX.writeFile(wb, `attendance_${startDate || "start"}_${endDate || "end"}.xlsx`);
   };
 
+  // Pagination
   const indexOfLast = currentPage * recordsPerPage;
   const indexOfFirst = indexOfLast - recordsPerPage;
   const currentRecords = filteredData.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
-  if (loading) return <div className="employee-message">Loading attendance...</div>;
+  if (loading) return <div className="employee-message">Loading...</div>;
   if (error) return <div className="employee-message employee-error">{error}</div>;
 
   return (
     <div className="attendance-container">
-      <h2>Attendance Records</h2>
-      <p style={{ fontSize: '0.9rem', color: '#666', margin: '10px 0' }}>
-        All times shown in <strong>Bangladesh Time (UTC+6)</strong>
-      </p>
+      <h2 className="employee-title">Attendance</h2>
 
       <div className="attendance-filters">
         <div className="form-group">
           <label>Start Date</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </div>
         <div className="form-group">
           <label>End Date</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
 
-        {allowedRoles.includes(user?.role) && (
+        {user && allowedRoles.includes(user.role) && (
           <>
             <div className="form-group">
               <label>Employee</label>
-              <select value={selectedEmployee} onChange={e => setSelectedEmployee(e.target.value)}>
+              <select value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
                 <option value="">All Employees</option>
-                {employees.map(emp => (
-                  <option key={emp._id} value={emp._id}>{emp.fullName}</option>
+                {employees.map((emp) => (
+                  <option key={emp._id} value={emp._id}>
+                    {emp.fullName}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="form-group">
-              <label>Search</label>
+              <label>Search Name</label>
               <input
                 type="text"
-                placeholder="Search by name..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name..."
               />
             </div>
           </>
         )}
 
         <div className="filter-buttons">
-          <button onClick={handleFilter} className="employee-button">Apply Filter</button>
-          <button onClick={exportToExcel} className="employee-button">Export Excel</button>
+          <button onClick={handleFilter} className="employee-button">Filter</button>
+          <button onClick={exportToExcel} className="employee-button">Export to Excel</button>
         </div>
       </div>
 
@@ -474,25 +228,33 @@ const AttendanceList = () => {
               <th>Out</th>
               <th>Hours</th>
               <th>Status</th>
-              <th>Late</th>
-              <th>OT</th>
+              <th>Late By</th>
+              <th>Overtime</th>
             </tr>
           </thead>
           <tbody>
             {currentRecords.length === 0 ? (
-              <tr><td colSpan="9" style={{textAlign:'center', padding:'30px'}}>No records found</td></tr>
+              <tr>
+                <td colSpan="9" style={{ textAlign: "center", padding: "20px" }}>
+                  No attendance records found.
+                </td>
+              </tr>
             ) : (
-              currentRecords.map((r, i) => (
-                <tr key={`${r.employeeId}-${r.date}-${i}`}>
-                  <td>{r.fullName}</td>
-                  <td>{r.employeeCode}</td>
-                  <td>{r.date}</td>
-                  <td>{formatTime(r.check_in)}</td>
-                  <td>{formatTime(r.check_out)}</td>
-                  <td>{r.work_hours.toFixed(2)}</td>
-                  <td><span className={`status-badge ${getStatusClass(r.status)}`}>{r.status}</span></td>
-                  <td>{formatMinutes(r.lateBy)}</td>
-                  <td>{formatOvertime(r.overtimeHours)}</td>
+              currentRecords.map((record, idx) => (
+                <tr key={`${record.employeeId}-${record.date}-${idx}`}>
+                  <td>{record.fullName}</td>
+                  <td>{record.employeeCode}</td>
+                  <td>{record.date}</td>
+                  <td>{extractOriginalTime(record.check_in)}</td>
+                  <td>{extractOriginalTime(record.check_out)}</td>
+                  <td>{record.work_hours ? record.work_hours.toFixed(2) : "0.00"}</td>
+                  <td>
+                    <span className={`status-badge ${getStatusClass(record.status)}`}>
+                      {record.status}
+                    </span>
+                  </td>
+                  <td>{formatToMinutesOnly(record.lateBy, "minutes")}</td>
+                  <td>{formatToMinutesOnly(record.overtimeHours, "hours")}</td>
                 </tr>
               ))
             )}
@@ -500,15 +262,28 @@ const AttendanceList = () => {
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {filteredData.length > recordsPerPage && (
         <div className="pagination-controls">
-          <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage===1}>Previous</button>
-          <span>Page {currentPage} / {totalPages}</span>
-          <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage===totalPages}>Next</button>
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="pagination-button"
+          >
+            Previous
+          </button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="pagination-button"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
   );
 };
+
 
 export default AttendanceList;
