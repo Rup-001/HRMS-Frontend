@@ -35,8 +35,37 @@ const EmployeeList = () => {
           getCompanies(token),
         ]);
         if (employeeData.success && companyData.success) {
-          setEmployees(employeeData.data);
-          setFilteredEmployees(employeeData.data);
+          const employeesWithAge = employeeData.data.map(emp => {
+            if (emp.joiningDate) {
+              const today = new Date();
+              const join = new Date(emp.joiningDate);
+              
+              let years = today.getFullYear() - join.getFullYear();
+              let months = today.getMonth() - join.getMonth();
+              let days = today.getDate() - join.getDate();
+
+              if (days < 0) {
+                months--;
+                days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+              }
+              
+              if (months < 0) {
+                years--;
+                months += 12;
+              }
+              
+              const service = [];
+              if (years > 0) service.push(`${years} year${years > 1 ? 's' : ''}`);
+              if (months > 0) service.push(`${months} month${months > 1 ? 's' : ''}`);
+              if (days > 0) service.push(`${days} day${days > 1 ? 's' : ''}`);
+              
+              emp.ageOfService = service.length > 0 ? service.join(', ') : '0 days';
+            }
+            return emp;
+          });
+          
+          setEmployees(employeesWithAge);
+          setFilteredEmployees(employeesWithAge);
           setCompanies(companyData.data);
         } else {
           setError(employeeData.error || companyData.error || 'Failed to fetch data');
@@ -70,7 +99,34 @@ const EmployeeList = () => {
       const token = localStorage.getItem('token');
       const data = await getEmployeeProfile(id, token);
       if (data.success) {
-        setSelectedEmployee(data.data);
+        const employeeData = data.data;
+        if (employeeData.joiningDate) {
+          const today = new Date();
+          const join = new Date(employeeData.joiningDate);
+          
+          let years = today.getFullYear() - join.getFullYear();
+          let months = today.getMonth() - join.getMonth();
+          let days = today.getDate() - join.getDate();
+
+          if (days < 0) {
+            months--;
+            days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+          }
+          
+          if (months < 0) {
+            years--;
+            months += 12;
+          }
+          
+          const service = [];
+          if (years > 0) service.push(`${years} year${years > 1 ? 's' : ''}`);
+          if (months > 0) service.push(`${months} month${months > 1 ? 's' : ''}`);
+          if (days > 0) service.push(`${days} day${days > 1 ? 's' : ''}`);
+          
+          employeeData.ageOfService = service.length > 0 ? service.join(', ') : '0 days';
+        }
+        
+        setSelectedEmployee(employeeData);
         setShowModal(true);
       } else {
         setError(data.error || 'Failed to fetch employee details');
@@ -102,8 +158,28 @@ const EmployeeList = () => {
       'Email': employee.email || '-',
       'Company': getCompanyName(employee.companyId),
       'Role': employee.role || '-',
-      'Department': employee.assignedDepartment || '-',
+      'Department': employee.department || '-',
       'Designation': employee.designation || '-',
+      'Age of Service': employee.joiningDate ? (() => {
+        const today = new Date();
+        const join = new Date(employee.joiningDate);
+        let years = today.getFullYear() - join.getFullYear();
+        let months = today.getMonth() - join.getMonth();
+        let days = today.getDate() - join.getDate();
+        if (days < 0) {
+          months--;
+          days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+        }
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+        const service = [];
+        if (years > 0) service.push(`${years} year${years > 1 ? 's' : ''}`);
+        if (months > 0) service.push(`${months} month${months > 1 ? 's' : ''}`);
+        if (days > 0) service.push(`${days} day${days > 1 ? 's' : ''}`);
+        return service.length > 0 ? service.join(', ') : '0 days';
+      })() : '-',
       'Phone': employee.personalPhoneNumber || '-',
       'Address': employee.presentAddress || '-',
       'Gender': employee.gender || '-',
@@ -168,10 +244,11 @@ const EmployeeList = () => {
                   <th>Employee Code</th>
                   <th>Email</th>
                   <th>Company</th>
-                  <th>Role</th>
+                  {/* <th>Role</th> */}
                   <th>Shift</th>
                   <th>Department</th>
                   <th>Designation</th>
+                  {/* <th>Age of Service</th> */}
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -196,10 +273,11 @@ const EmployeeList = () => {
                     <td>{employee.newEmployeeCode || '-'}</td>
                     <td>{employee.email || '-'}</td>
                     <td>{getCompanyName(employee.companyId)}</td>
-                    <td>{employee.role || '-'}</td>
+                    {/* <td>{employee.role || '-'}</td> */}
                     <td>{employee.shift?.name || '-'}</td>
-                    <td>{employee.assignedDepartment || '-'}</td>
+                    <td>{employee.department?.name || '-'}</td>
                     <td>{employee.designation?.name || '-'}</td>
+                    {/* <td>{employee.ageOfService || '-'}</td> */}
                     <td>{employee.employeeStatus || '-'}</td>
                     <td>
                       <button
@@ -268,6 +346,12 @@ const EmployeeList = () => {
                       else if (typeof displayValue === 'boolean') displayValue = displayValue ? 'Yes' : 'No';
                       else if (['joiningDate', 'lastWorkingDay', 'dob'].includes(key) && displayValue) {
                         displayValue = new Date(displayValue).toLocaleDateString();
+                      } else if (key === 'ageOfService') {
+                        return (
+                          <div key={key} className="modal-detail-item">
+                            <strong>Age of Service:</strong> <span>{displayValue}</span>
+                          </div>
+                        );
                       } else if (key === 'companyId') {
                         displayValue = getCompanyName(displayValue);
                       } else if (key === 'managerId') {

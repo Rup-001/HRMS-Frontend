@@ -7,8 +7,5 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    esbuild: {
-      drop: isProduction ? ['console', 'debugger'] : [],
-    },
   }
 })

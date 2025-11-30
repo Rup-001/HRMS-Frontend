@@ -222,7 +222,7 @@ const AttendanceList = () => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Code</th>
+              <th>Employee Code</th>
               <th>Date</th>
               <th>In</th>
               <th>Out</th>

@@ -28,8 +28,37 @@ const ProfilePage = () => {
         ]);
 
         if (employeeData.success) {
-          setProfile(employeeData.data);
-          const company = companyData.data.find(c => c._id === employeeData.data.companyId);
+          const profileData = employeeData.data;
+          
+          if (profileData.joiningDate) {
+            const today = new Date();
+            const join = new Date(profileData.joiningDate);
+            
+            let years = today.getFullYear() - join.getFullYear();
+            let months = today.getMonth() - join.getMonth();
+            let days = today.getDate() - join.getDate();
+
+            if (days < 0) {
+              months--;
+              days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+            
+            if (months < 0) {
+              years--;
+              months += 12;
+            }
+            
+            const service = [];
+            if (years > 0) service.push(`${years} year${years > 1 ? 's' : ''}`);
+            if (months > 0) service.push(`${months} month${months > 1 ? 's' : ''}`);
+            if (days > 0) service.push(`${days} day${days > 1 ? 's' : ''}`);
+            
+            profileData.ageOfService = service.length > 0 ? service.join(', ') : '0 days';
+          }
+          
+          setProfile(profileData);
+          
+          const company = companyData.data.find(c => c._id === profileData.companyId);
           setCompanyName(company ? company.name : '-');
         } else {
           setError('Failed to fetch profile');
@@ -91,6 +120,10 @@ const ProfilePage = () => {
           <div className="profile-field">
             <span className="profile-label">Joining Date:</span>
             <span className="profile-value">{profile.joiningDate ? new Date(profile.joiningDate).toLocaleDateString() : '-'}</span>
+          </div>
+          <div className="profile-field">
+            <span className="profile-label">Age of Service:</span>
+            <span className="profile-value">{profile.ageOfService || '-'}</span>
           </div>
           <div className="profile-field">
             <span className="profile-label">Status:</span>

@@ -91,6 +91,34 @@ const EmployeeUpdate = () => {
         const employeeData = await getEmployeeProfile(id, token);
         if (employeeData.success) {
           const emp = employeeData.data;
+
+          let calculatedAgeOfService = '';
+          if (emp.joiningDate) {
+            const today = new Date();
+            const join = new Date(emp.joiningDate);
+            
+            let years = today.getFullYear() - join.getFullYear();
+            let months = today.getMonth() - join.getMonth();
+            let days = today.getDate() - join.getDate();
+
+            if (days < 0) {
+              months--;
+              days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+            
+            if (months < 0) {
+              years--;
+              months += 12;
+            }
+            
+            const service = [];
+            if (years > 0) service.push(`${years} year${years > 1 ? 's' : ''}`);
+            if (months > 0) service.push(`${months} month${months > 1 ? 's' : ''}`);
+            if (days > 0) service.push(`${days} day${days > 1 ? 's' : ''}`);
+            
+            calculatedAgeOfService = service.length > 0 ? service.join(', ') : '0 days';
+          }
+
           setFormData({
             companyId: emp.companyId?._id || emp.companyId || '',
             fullName: emp.fullName || '',
@@ -107,7 +135,7 @@ const EmployeeUpdate = () => {
             deviceUserId: emp.deviceUserId || '',
             currentDesignation: emp.currentDesignation || '',
             lastWorkingDay: emp.lastWorkingDay ? new Date(emp.lastWorkingDay).toISOString().split('T')[0] : '',
-            ageOfService: emp.ageOfService || '',
+            ageOfService: calculatedAgeOfService, // Use the dynamically calculated value
             personalPhoneNumber: emp.personalPhoneNumber || '',
             emergencyContactNumber: emp.emergencyContactNumber || '',
             hasIdCard: emp.hasIdCard || false,
@@ -189,10 +217,27 @@ const EmployeeUpdate = () => {
     if (formData.joiningDate) {
       const today = new Date();
       const join = new Date(formData.joiningDate);
-      const diffYears = today.getFullYear() - join.getFullYear();
-      const diffMonths = today.getMonth() - join.getMonth();
-      const years = diffYears + (diffMonths < 0 ? -1 : 0);
-      setFormData(prev => ({ ...prev, ageOfService: `${years} years` }));
+      
+      let years = today.getFullYear() - join.getFullYear();
+      let months = today.getMonth() - join.getMonth();
+      let days = today.getDate() - join.getDate();
+
+      if (days < 0) {
+        months--;
+        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+      }
+      
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      
+      const service = [];
+      if (years > 0) service.push(`${years} year${years > 1 ? 's' : ''}`);
+      if (months > 0) service.push(`${months} month${months > 1 ? 's' : ''}`);
+      if (days > 0) service.push(`${days} day${days > 1 ? 's' : ''}`);
+      
+      setFormData(prev => ({ ...prev, ageOfService: service.length > 0 ? service.join(', ') : '0 days' }));
     }
   }, [formData.joiningDate]);
 
