@@ -142,3 +142,47 @@
   border-radius: 4px;
   font-size: 1rem;
 }
+
+
+/* Weekend Days Styles */
+.weekend-days-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.weekend-day-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.weekend-day-label:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.weekend-day-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #4a90e2;
+}
+
+.weekend-day-label input[type="checkbox"]:checked + span {
+  color: #4a90e2;
+  font-weight: 600;
+}
+
+.weekend-day-label span {
+  color: #e0e0e0;
+  font-size: 0.95rem;
+}
