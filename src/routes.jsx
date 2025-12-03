@@ -278,6 +278,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/company-policies',
+        element: (
+          <ProtectedRoute>
+            <CommonDocumentsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/shifts',
         element: (
           <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>

@@ -4,7 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export const getDocuments = async (token, params = {}) => {
   try {
     const query = new URLSearchParams(params).toString();
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/document${query ? `?${query}` : ''}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents${query ? `?${query}` : ''}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -19,7 +19,7 @@ export const getDocuments = async (token, params = {}) => {
 
 export const getDocumentById = async (id, token) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/document/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -34,7 +34,23 @@ export const getDocumentById = async (id, token) => {
 
 export const uploadDocument = async (formData, token) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/document`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
+export const uploadCommonDocument = async (formData, token) => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/common`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

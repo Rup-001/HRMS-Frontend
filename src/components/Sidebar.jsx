@@ -47,6 +47,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
             Dashboard
           </Link>
         </li>
+        <li>
+          <Link to="/company-policies" className="sidebar-link" onClick={handleLinkClick}>
+            <FileText className="nav-icon" />
+            Company Policies
+          </Link>
+        </li>
         {/* <li>
           <Link to="/documents/common" className="sidebar-link" onClick={handleLinkClick}>
             <FileText className="nav-icon" />

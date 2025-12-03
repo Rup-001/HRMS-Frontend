@@ -93,6 +93,20 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
     return 'status-default';
   };
 
+  const formatTime = (isoString) => {
+    if (!isoString) return '-';
+    try {
+      // Expecting a string like '2023-11-20T05:20:00.000Z'
+      // We want to show '05:20' without any timezone conversion
+      const timePart = isoString.split('T')[1];
+      return timePart.substring(0, 5);
+    } catch (e) {
+      console.error("Error formatting time string:", isoString, e);
+      // Fallback for any unexpected format
+      return new Date(isoString).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+  };
+
   return (
     <div className="attendance-container">
       <h3 className="employee-title">Attendance Manual Requests</h3>
@@ -126,10 +140,10 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
                 <tr key={request._id}>
                   <td>{request.employeeId?.fullName} ({request.employeeId?.newEmployeeCode})</td>
                   <td>{new Date(request.attendanceDate).toLocaleDateString()}</td>
-                  <td>{request.originalCheckIn ? new Date(request.originalCheckIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
-                  <td>{request.originalCheckOut ? new Date(request.originalCheckOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
-                  <td>{request.proposedCheckIn ? new Date(request.proposedCheckIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
-                  <td>{request.proposedCheckOut ? new Date(request.proposedCheckOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
+                  <td>{formatTime(request.originalCheckIn)}</td>
+                  <td>{formatTime(request.originalCheckOut)}</td>
+                  <td>{formatTime(request.proposedCheckIn)}</td>
+                  <td>{formatTime(request.proposedCheckOut)}</td>
                   <td>{request.reason}</td>
                   
                   <td className={getStatusClass(request.status)}>

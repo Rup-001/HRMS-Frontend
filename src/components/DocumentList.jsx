@@ -677,16 +677,20 @@ const DocumentList = () => {
     fetchData();
   }, []);
 
-  // Fixed: Properly extract uploader name (supports both populated object and ID)
   const getUploaderName = (uploadedBy) => {
     if (!uploadedBy) return '-';
 
-    // Case 1: populated user object (has fullName/email)
+    // Case 1: deeply populated structure
+    if (typeof uploadedBy === 'object' && uploadedBy.employeeId && uploadedBy.employeeId.fullName) {
+      return uploadedBy.employeeId.fullName;
+    }
+
+    // Case 2: regular populated user object (fallback)
     if (typeof uploadedBy === 'object' && uploadedBy !== null) {
       return uploadedBy.fullName || uploadedBy.email || 'Unknown User';
     }
 
-    // Case 2: only user ID is stored → find in employees list
+    // Case 3: only user ID is stored (legacy)
     if (typeof uploadedBy === 'string') {
       const uploader = employees.find(emp => emp._id === uploadedBy);
       return uploader ? uploader.fullName || uploader.email || 'Unknown User' : 'Unknown User';
@@ -870,10 +874,7 @@ const DocumentList = () => {
               <div className="modal-detail-item">
                 <strong>Description:</strong> <span>{selectedDocument.description || 'No description'}</span>
               </div>
-              <div className="modal-detail-item">
-                <strong>File Name:</strong> <span>{selectedDocument.fileName || '-'}</span>
-              Nice job!
-              </div>
+
               <div className="modal-detail-item">
                 <strong>Uploaded On:</strong> <span>{new Date(selectedDocument.createdAt).toLocaleDateString()}</span>
               </div>
