@@ -1,8 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { getCommonDocuments, uploadCommonDocument } from '../api/document';
+import { getCommonDocuments, uploadCommonDocument, deleteDocument } from '../api/document';
 import '../styles/Employee.css';
-
+// import { Trash2 } from 'lucide-react';
+import { Eye, Download, Trash2 } from 'lucide-react';
+import '../styles/Employee.css';
 const CommonDocuments = () => {
   const { user } = useContext(AuthContext);
   const [documents, setDocuments] = useState([]);
@@ -89,6 +91,18 @@ const CommonDocuments = () => {
     return '-';
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await deleteDocument(id, token);
+      setDocuments(documents.filter(doc => doc._id !== id));
+    } catch (err) {
+      setError(err.message || 'Failed to delete document');
+    }
+  };
+
   const canUpload = user && ['HR Manager', 'Super Admin', 'Company Admin'].includes(user.role);
 
   if (loading) return <div className="employee-message">Loading documents...</div>;
@@ -139,21 +153,31 @@ const CommonDocuments = () => {
               <tr>
                 <th>Description</th>
                 <th>Uploaded By</th>
-                <th>Download</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {documents.map((doc) => (
-                <tr key={doc._id}>
-                  <td>{doc.description || '-'}</td>
-                  <td>{getUploaderName(doc.uploadedBy)}</td>
-                  <td>
-                    <a href={`${import.meta.env.VITE_API_URL}${doc.fileUrl}`} target="_blank" rel="noopener noreferrer" className="btn-link">
-                      Download
-                    </a>
-                  </td>
-                </tr>
-              ))}
+              {documents.map((doc) => {
+                const canDelete = user.role === 'Super Admin' || user.role === 'HR Manager' || user.role === "Company Admin" || (doc.uploadedBy && doc.uploadedBy._id === user._id);
+                return (
+                  <tr key={doc._id}>
+                    <td>{doc.description || '-'}</td>
+                    <td>{getUploaderName(doc.uploadedBy)}</td>
+                    <td className="button-icon">
+                      <a href={`${import.meta.env.VITE_API_URL}${doc.fileUrl}`} target="_blank" rel="noopener noreferrer"  
+                        className="employee-button download-button"
+                        style={{ marginLeft: '8px' }}>
+                         <Download className="button-icon" /> Download
+                      </a>
+                      {canDelete && (
+                        <button onClick={() => handleDelete(doc._id)} className="employee-button delete-button" style={{ marginLeft: '8px' }}>
+                          <Trash2 className="button-icon" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

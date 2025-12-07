@@ -1,14 +1,22 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { getHolidaysForYear, setHolidaysForYear } from '../api/holiday';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { getHolidaysForYear, setHolidaysForYear, uploadHolidayExcel } from '../api/holiday';
 import moment from 'moment';
 import toast from 'react-hot-toast';
 import '../styles/Employee.css'; // Using Employee.css for consistent styling
 
 const HolidayCalendar = () => {
+  const { user } = useContext(AuthContext);
   const [year, setYear] = useState(moment().year());
   const [holidays, setHolidays] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Excel Upload States
+  const [excelFile, setExcelFile] = useState(null);
+  const [uploadingExcel, setUploadingExcel] = useState(false);
+  const [excelUploadError, setExcelUploadError] = useState('');
+  const [excelUploadSuccess, setExcelUploadSuccess] = useState('');
 
   const fetchHolidays = useCallback(async () => {
     setIsLoading(true);
@@ -80,6 +88,50 @@ const HolidayCalendar = () => {
     setYear(parseInt(e.target.value, 10));
   };
 
+  // Excel Upload Handlers
+  const handleExcelFileChange = (e) => {
+    setExcelFile(e.target.files[0]);
+    setExcelUploadError('');
+    setExcelUploadSuccess('');
+  };
+
+  const handleExcelUpload = async (e) => {
+    e.preventDefault();
+    if (!excelFile) {
+      setExcelUploadError('Please select an Excel file to upload.');
+      return;
+    }
+
+    setUploadingExcel(true);
+    setExcelUploadError('');
+    setExcelUploadSuccess('');
+
+    const formData = new FormData();
+    formData.append('holidayFile', excelFile);
+
+    try {
+      const res = await uploadHolidayExcel(formData);
+      if (res.success) {
+        setExcelUploadSuccess(res.message);
+        setExcelFile(null); // Clear the file input
+        e.target.reset(); // Reset form for file input
+        fetchHolidays(); // Re-fetch to show new holidays
+        toast.success(res.message);
+      } else {
+        setExcelUploadError(res.error || 'Failed to upload Excel file.');
+        toast.error(res.error || 'Failed to upload Excel file.');
+      }
+    } catch (error) {
+      console.error('Excel upload error:', error);
+      setExcelUploadError(error.response?.data?.error || 'An error occurred during upload.');
+      toast.error(error.response?.data?.error || 'An error occurred during upload.');
+    } finally {
+      setUploadingExcel(false);
+    }
+  };
+
+  const canManageHolidays = user && ['HR Manager', 'Super Admin', 'Company Admin'].includes(user.role);
+
   return (
     <div className="employee-container">
       <div className="employee-header">
@@ -93,9 +145,40 @@ const HolidayCalendar = () => {
               ))}
             </select>
           </div>
-          <button onClick={handleAddHoliday} className="employee-button">Add Holiday</button>
+          {canManageHolidays && (
+            <button onClick={handleAddHoliday} className="employee-button">Add Holiday</button>
+          )}
         </div>
       </div>
+
+      {canManageHolidays && (
+        <div className="upload-form-container" style={{ marginBottom: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
+          <h3>Upload Holidays via Excel</h3>
+          <p>
+            Please use an Excel file with the following columns: <strong>Date (YYYY-MM-DD)</strong>, 
+            <strong>End Date (YYYY-MM-DD, optional)</strong>, <strong>Name</strong>, and <strong>Type (national/religious, optional)</strong>.
+            The system will attempt to derive the year from the filename (e.g., "holidays_2025.xlsx") or the dates within.
+            Uploading an Excel file will replace existing holidays for the detected year.
+          </p>
+          <form onSubmit={handleExcelUpload} className="form-grid">
+            <div className="form-group">
+              <label htmlFor="holidayFile">Select Excel File:</label>
+              <input 
+                type="file" 
+                id="holidayFile" 
+                accept=".xlsx, .xls" 
+                onChange={handleExcelFileChange} 
+                className="employee-input"
+              />
+            </div>
+            <button type="submit" className="employee-button" disabled={uploadingExcel}>
+              {uploadingExcel ? 'Uploading...' : 'Upload Excel'}
+            </button>
+            {excelUploadError && <p className="employee-message employee-error">{excelUploadError}</p>}
+            {excelUploadSuccess && <p className="employee-message employee-success">{excelUploadSuccess}</p>}
+          </form>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="employee-message">Loading...</div>
@@ -108,14 +191,13 @@ const HolidayCalendar = () => {
                 <th>End Date</th>
                 <th>Holiday Name</th>
                 <th>Type</th>
-                {/* <th>Applicable To All</th> */}
-                {/* <th>Actions</th> */}
+                {canManageHolidays && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {holidays.length === 0 ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
+                  <td colSpan={canManageHolidays ? "5" : "4"} style={{ textAlign: "center", padding: "20px" }}>
                     No holidays set for this year.
                   </td>
                 </tr>
@@ -157,18 +239,11 @@ const HolidayCalendar = () => {
                             <option value="religious">Religious</option>
                         </select>
                     </td>
-                    {/*
-                    <td>
-                        <input
-                            type="checkbox"
-                            checked={holiday.applicableToAll}
-                            onChange={(e) => handleHolidayChange(index, 'applicableToAll', e.target.checked)}
-                        />
-                    </td>
-                    */}
-                    {/* <td>
-                      <button onClick={() => handleRemoveHoliday(index)} className="employee-button" style={{ backgroundColor: '#dc3545' }}>Remove</button>
-                    </td> */}
+                    {canManageHolidays && (
+                      <td>
+                        <button onClick={() => handleRemoveHoliday(index)} className="employee-button delete-button">Remove</button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -177,11 +252,13 @@ const HolidayCalendar = () => {
         </div>
       )}
 
-      <div className="employee-footer" style={{ textAlign: 'center', marginTop: '20px' }}>
-        <button onClick={handleSave} disabled={isLoading} className="employee-button">
-          {isLoading ? 'Saving...' : 'Save Calendar'}
-        </button>
-      </div>
+      {canManageHolidays && (
+        <div className="employee-footer" style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button onClick={handleSave} disabled={isLoading} className="employee-button">
+            {isLoading ? 'Saving...' : 'Save Calendar'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

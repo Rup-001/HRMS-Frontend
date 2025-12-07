@@ -25,3 +25,13 @@ export const setHolidaysForYear = async (year, holidays) => {
   });
   return response.data;
 };
+
+export const uploadHolidayExcel = async (formData) => {
+  const response = await axios.post(`${API_URL}/api/holidays/upload-excel`, formData, {
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'multipart/form-data', // Important for file uploads
+    },
+  });
+  return response.data;
+};

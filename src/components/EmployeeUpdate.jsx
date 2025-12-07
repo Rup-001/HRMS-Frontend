@@ -333,7 +333,7 @@ const EmployeeUpdate = () => {
                 <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required />
               </div>
               <div className="form-group">
-                <label>New Employee Code *</label>
+                <label>New HRMS ID *</label>
                 <input type="text" name="newEmployeeCode" value={formData.newEmployeeCode} readOnly />
               </div>
               <div className="form-group">

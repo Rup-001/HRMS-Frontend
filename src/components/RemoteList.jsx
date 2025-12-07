@@ -217,7 +217,7 @@ const RemoteList = () => {
               <thead>
                 <tr>
                   <th>Employee Name</th>
-                  <th>Employee Code</th>
+                  <th>HRMS ID</th>
                   <th>Start Date</th>
                   <th>End Date</th>
                   <th>Status</th>

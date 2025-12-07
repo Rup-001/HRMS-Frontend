@@ -72,7 +72,7 @@ const Dashboard = () => {
         <div className="employee-section">
           <h3>Personal Info</h3>
           <ul>
-            <li><b>Employee Code:</b> {employeeData.personalInfo.employeeCode}</li>
+            <li><b>HRMS ID:</b> {employeeData.personalInfo.employeeCode}</li>
             <li><b>Designation:</b> {employeeData.personalInfo.designation}</li>
             <li><b>Department:</b> {employeeData.personalInfo.department}</li>
             <li><b>Joining Date:</b> {employeeData.personalInfo.joiningDate}</li>

@@ -74,3 +74,22 @@ export const getCommonDocuments = async (token) => {
     throw error.response?.data || { success: false, error: 'Network error' };
   }
 };
+
+export const deleteDocument = async (id, token) => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to delete document');
+    }
+    return data;
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    throw error;
+  }
+};

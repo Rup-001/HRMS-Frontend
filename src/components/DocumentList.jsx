@@ -630,9 +630,9 @@ import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { getEmployees } from '../api/employee';
 import { getCompanies } from '../api/company';
-import { getDocuments, getDocumentById, uploadDocument } from '../api/document';
+import { getDocuments, getDocumentById, uploadDocument, deleteDocument } from '../api/document';
 import '../styles/Employee.css';
-import { Eye, Download } from 'lucide-react';
+import { Eye, Download, Trash2 } from 'lucide-react';
 
 const DocumentList = () => {
   const { user } = useContext(AuthContext);
@@ -773,6 +773,18 @@ const DocumentList = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await deleteDocument(id, token);
+      setDocuments(documents.filter(doc => doc._id !== id));
+    } catch (err) {
+      setError(err.message || 'Failed to delete document');
+    }
+  };
+
   if (loading && documents.length === 0) return <div className="employee-message">Loading documents...</div>;
   if (error) return <div className="employee-message employee-error">{error}</div>;
 
@@ -835,28 +847,36 @@ const DocumentList = () => {
               </tr>
             </thead>
             <tbody>
-              {documents.map((doc) => (
-                <tr key={doc._id}>
-                  <td>
-                    <strong>{getUploaderName(doc.uploadedBy)}</strong>
-                  </td>
-                  <td>{doc.description || <em>No description</em>}</td>
-                  <td>
-                    <button onClick={() => handleView(doc._id)} className="employee-button view-button">
-                      <Eye className="button-icon" /> View
-                    </button>
-                    <a
-                      href={`${import.meta.env.VITE_API_URL}${doc.fileUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="employee-button download-button"
-                      style={{ marginLeft: '8px' }}
-                    >
-                      <Download className="button-icon" /> Download
-                    </a>
-                  </td>
-                </tr>
-              ))}
+              {documents.map((doc) => {
+                const canDelete = user.role === 'Super Admin' || user.role === 'HR Manager' || user.role === "Company Admin" || (doc.uploadedBy && doc.uploadedBy._id === user._id);
+                return (
+                  <tr key={doc._id}>
+                    <td>
+                      <strong>{getUploaderName(doc.uploadedBy)}</strong>
+                    </td>
+                    <td>{doc.description || <em>No description</em>}</td>
+                    <td>
+                      <button onClick={() => handleView(doc._id)} className="employee-button view-button">
+                        <Eye className="button-icon" /> View
+                      </button>
+                      <a
+                        href={`${import.meta.env.VITE_API_URL}${doc.fileUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="employee-button download-button"
+                        style={{ marginLeft: '8px' }}
+                      >
+                        <Download className="button-icon" /> Download
+                      </a>
+                      {canDelete && (
+                        <button onClick={() => handleDelete(doc._id)} className="employee-button delete-button" style={{ marginLeft: '8px' }}>
+                          <Trash2 className="button-icon" /> Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
