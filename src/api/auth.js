@@ -54,3 +54,25 @@ export const resendInvitation = async (email, token) => {
     throw error.response?.data || { success: false, error: 'Network error' };
   }
 };
+
+export const resetPassword = async (token, newPassword) => {
+  try {
+    const response = await axios.post(`${API_URL}/api/auth/reset-password`, { token, newPassword });
+    return response.data;
+  } catch (error) {
+    return error.response?.data || { success: false, error: 'Network error' };
+  }
+};
+
+export const forceResendInvitation = async (email, token) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/api/auth/force-resend-invitation`,
+      { email },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { success: false, error: 'Network error' };
+  }
+};

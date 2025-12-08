@@ -10,6 +10,7 @@ import EmployeeUpdatePage from './pages/EmployeeUpdatePage';
 import CompanyCreatePage from './pages/CompanyCreatePage';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import AttendanceListPage from './pages/AttendanceListPage';
 import AttendanceAdjustmentRequestPage from './pages/AttendanceAdjustmentRequestPage';
 import LeavePolicyPage from './pages/LeavePolicyPage';
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: '/accept-invitation',
         element: <PublicRoute><AcceptInvitationPage /></PublicRoute>,
+      },
+      {
+        path: '/reset-password',
+        element: <PublicRoute><ResetPasswordPage /></PublicRoute>,
       },
       {
         path: '/dashboard',
