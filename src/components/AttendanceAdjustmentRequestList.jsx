@@ -3,6 +3,18 @@ import { getAdjustmentRequests, managerReviewAdjustment } from '../api/attendanc
 import { AuthContext } from '../context/AuthContext';
 import '../styles/Attendance.css';
 
+const getExactTimeFromDatabaseString = (dateTimeString) => {
+  if (!dateTimeString) {
+    return '-';
+  }
+  const match = dateTimeString.match(/T(\d{2}:\d{2})/);
+  if (match && match[1]) {
+    return match[1];
+  }
+  console.warn(`Could not extract exact time from string: ${dateTimeString}`);
+  return '-';
+};
+
 const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
   const { user } = useContext(AuthContext);
   const [requests, setRequests] = useState([]);
@@ -45,7 +57,17 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
 
       if (data.success) {
         setSuccess('Request processed successfully!');
-        fetchRequests();
+        setRequests(prev => prev.map(req => {
+          if (req._id === id) {
+            return {
+              ...req,
+              status: status,
+              managerComment: managerComment[id] || req.managerComment,
+              managerApprovalDate: new Date().toISOString()
+            };
+          }
+          return req;
+        }));
         setManagerComment(prev => {
           const updated = { ...prev };
           delete updated[id];
@@ -126,10 +148,10 @@ const AttendanceAdjustmentRequestList = ({ refreshTrigger }) => {
                 <tr key={request._id}>
                   <td>{request.employeeId?.fullName} ({request.employeeId?.newEmployeeCode})</td>
                   <td>{new Date(request.attendanceDate).toLocaleDateString()}</td>
-                  <td>{request.originalCheckIn ? new Date(request.originalCheckIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
-                  <td>{request.originalCheckOut ? new Date(request.originalCheckOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
-                  <td>{request.proposedCheckIn ? new Date(request.proposedCheckIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
-                  <td>{request.proposedCheckOut ? new Date(request.proposedCheckOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
+                  <td>{getExactTimeFromDatabaseString(request.originalCheckIn)}</td>
+                  <td>{getExactTimeFromDatabaseString(request.originalCheckOut)}</td>
+                  <td>{getExactTimeFromDatabaseString(request.proposedCheckIn)}</td>
+                  <td>{getExactTimeFromDatabaseString(request.proposedCheckOut)}</td>
                   <td>{request.reason}</td>
                   
                   <td className={getStatusClass(request.status)}>
