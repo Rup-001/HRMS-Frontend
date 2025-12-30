@@ -39,6 +39,7 @@ export const AuthProvider = ({ children }) => {
               userData.profileImage = response.data.passportSizePhoto
                 ? `${import.meta.env.VITE_API_URL}${response.data.passportSizePhoto}`
                 : null;
+              userData.department = response.data.department;
             } else {
               localStorage.removeItem('token');
               setUser(null);
@@ -89,6 +90,7 @@ export const AuthProvider = ({ children }) => {
               profileImage: response.data.passportSizePhoto
                 ? `${import.meta.env.VITE_API_URL}${response.data.passportSizePhoto}`
                 : null,
+              department: response.data.department,
             });
           } else {
             localStorage.removeItem('token');

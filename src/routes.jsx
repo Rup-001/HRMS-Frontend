@@ -29,24 +29,41 @@ import MyLeaveBalancePage from './pages/MyLeaveBalancePage';
 import CommonDocumentsPage from './pages/CommonDocumentsPage';
 import DepartmentListPage from './pages/DepartmentListPage';
 import DesignationListPage from './pages/DesignationListPage';
-import ShiftManagement from './pages/ShiftManagement';
+import ShiftingRoster from './pages/ShiftingRoster';
+import ShiftManagement from './pages/ShiftManagement/ShiftManagement';
+import RosterManagement from './pages/ShiftManagement/RosterManagement';
+import ShiftAttendance from './pages/ShiftManagement/ShiftAttendance';
+import WFHRequests from './pages/ShiftManagement/WFHRequests';
+import OutsideWorkRequests from './pages/ShiftManagement/OutsideWorkRequests';
+import EmployeeRoster from './pages/ShiftManagement/EmployeeRoster';
 import HolidayPage from './pages/HolidayPage';
 import ShiftTemplatePage from './pages/ShiftTemplatePage';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles, allowedDepartments }) => {
   const { user, loading } = useContext(AuthContext);
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
+
+  if (!allowedRoles && !allowedDepartments) {
+    return children;
+  }
+
   if (user.role === 'Super Admin') {
     return children;
   }
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" />;
+
+  if (allowedRoles && allowedRoles.includes(user.role)) {
+    return children;
   }
-  return children;
+
+  if (allowedDepartments && user.department && allowedDepartments.some(dep => user.department.name.toLowerCase().includes(dep))) {
+    return children;
+  }
+
+  return <Navigate to="/dashboard" />;
 };
 
 const PublicRoute = ({ children }) => {
@@ -306,6 +323,64 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: '/shifting-roster',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <ShiftingRoster />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/shift-management/shifts',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager', 'Manager', 'Employee']} allowedDepartments={['noc']}>
+            <ShiftManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/shift-management/roster',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager', 'Manager', 'Employee']} allowedDepartments={['noc']}>
+            <RosterManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/shift-management/attendance',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager', 'Manager', 'Employee']} allowedDepartments={['noc']}>
+            <ShiftAttendance />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/shift-management/wfh',
+        element: (
+          <ProtectedRoute>
+            <WFHRequests />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/shift-management/outside-work',
+        element: (
+          <ProtectedRoute>
+            <OutsideWorkRequests />
+          </ProtectedRoute>
+        ),
+      },
+      /*
+      {
+        path: '/shifting-roster/employee-roster',
+        element: (
+          <ProtectedRoute allowedRoles={['Super Admin', 'Company Admin', 'HR Manager']}>
+            <EmployeeRoster />
+          </ProtectedRoute>
+        ),
+      },
+      */
       {
         path: '/holidays',
         element: (

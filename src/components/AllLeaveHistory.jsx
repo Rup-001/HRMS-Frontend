@@ -26,12 +26,12 @@ const AllLeaveHistory = () => {
       }
     };
 
-    if (user?.role === 'HR Manager'||'Super Admin') {
+    if (user?.role === 'HR Manager' || user?.role === 'Super Admin') {
       fetchLeaveHistory();
     }
   }, [user]);
 
-  if (user?.role !== 'HR Manager'&'Super Admin') {
+  if (user?.role !== 'HR Manager' && user?.role !== 'Super Admin') {
     return <div className="employee-message">Access Denied</div>;
   }
 

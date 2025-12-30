@@ -9,9 +9,11 @@ export const getEmployeeProfile = async (employeeId, token) => {
   return response.data;
 };
 
-export const getEmployees = async (token) => {
+export const getEmployees = async (token, departmentId = null) => {
+  const params = departmentId ? { departments: departmentId } : {};
   const response = await axios.get(`${API_URL}/api/employees`, {
     headers: { Authorization: `Bearer ${token}` },
+    params: params,
   });
   return response.data;
 };

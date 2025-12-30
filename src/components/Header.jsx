@@ -5,9 +5,22 @@ import { Users, Calendar, FileText, Briefcase, LayoutDashboard, Menu, X, LogOut,
 import '../styles/Header.css';
 
 const Header = ({ toggleSidebar, isDesktop, isSidebarOpen }) => {
-  const { user, logout } = useContext(AuthContext);
+  const authContext = useContext(AuthContext);
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  // Safety check: if context is not available, don't render
+  if (!authContext) {
+    console.warn('AuthContext is not available in Header');
+    return null;
+  }
+
+  const { user, logout, loading } = authContext;
+
+  // Show loading state or return null if user is not available
+  if (loading) {
+    return null;
+  }
 
   const handleLinkClick = () => {
     // Close dropdowns when a link is clicked

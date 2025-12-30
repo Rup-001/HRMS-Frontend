@@ -1,15 +1,28 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Users, Calendar, FileText, Lock, LogOut, Menu, X, Briefcase, LayoutDashboard } from 'lucide-react';
+import { Users, Calendar, FileText, Lock, LogOut, Menu, X, Briefcase, LayoutDashboard, ClipboardList } from 'lucide-react';
 import '../styles/Sidebar.css';
 
 const defaultAvatar = '/default-avatar.png';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
-  const { user, logout } = useContext(AuthContext);
+  const authContext = useContext(AuthContext);
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  // Safety check: if context is not available or still loading, don't render
+  if (!authContext) {
+    console.warn('AuthContext is not available in Sidebar');
+    return null;
+  }
+
+  const { user, logout, loading } = authContext;
+
+  // Show loading state or return null if user is not available
+  if (loading) {
+    return null;
+  }
 
   const handleLogout = () => {
     logout();
@@ -156,6 +169,48 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktop }) => {
               </ul>
             )}
           </li>
+        )}
+        {(user?.role === 'Super Admin' || user?.role === 'HR Manager' || user?.role === 'Company Admin' || user?.department?.name?.toLowerCase().includes('noc')) && (
+            <li className="dropdown">
+                <div className="sidebar-link dropdown-toggle" onClick={() => toggleDropdown('shiftingRoster')}>
+                    <ClipboardList className="nav-icon" />
+                    Shifting Roster
+                </div>
+                {openDropdown === 'shiftingRoster' && (
+                    <ul className="dropdown-menu">
+                        <li>
+                            <Link to="/shift-management/shifts" className="dropdown-item" onClick={handleLinkClick}>
+                                Shift Management
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/shift-management/roster" className="dropdown-item" onClick={handleLinkClick}>
+                                Roster Management
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/shift-management/attendance" className="dropdown-item" onClick={handleLinkClick}>
+                                Roster Attendance
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/shift-management/wfh" className="dropdown-item" onClick={handleLinkClick}>
+                                WFH Requests
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/shift-management/outside-work" className="dropdown-item" onClick={handleLinkClick}>
+                                Outside Work Requests
+                            </Link>
+                        </li>
+                        {/* <li>
+                            <Link to="/shifting-roster/employee-roster" className="dropdown-item" onClick={handleLinkClick}>
+                                Employee Roster
+                            </Link>
+                        </li> */}
+                    </ul>
+                )}
+            </li>
         )}
         <li className="dropdown">
           <div className="sidebar-link dropdown-toggle" onClick={() => toggleDropdown('requests')}>
